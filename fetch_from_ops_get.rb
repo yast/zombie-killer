@@ -25,8 +25,16 @@ end
 
 class FetchFromOpsGet < Parser::Rewriter
   def dump(node)
-#    pp node
-#    pp node.loc if node.respond_to? :loc
+    pp node
+    pp node.loc if node.respond_to? :loc
+  end
+
+  def dump_children(node)
+    node.children.each_with_index do |child_node, i|
+      printf "%02d %s ", i, child_node.class
+      dump child_node
+      puts
+    end
   end
 
   def initialize(*args)
@@ -36,35 +44,32 @@ class FetchFromOpsGet < Parser::Rewriter
 
   def on_send(node)
     count = 0
-    if node.receiver_is?(:Ops) && node.message.to_s.start_with?("get")
-      node.children.each_with_index do |child_node, i|
-#        printf "%02d %s ", i, child_node.class
-#        dump child_node
-#        puts
-      end
-
-      $stderr.puts node.inspect
-      object  = node.children[2]
-#      $stderr.puts object.inspect
-      index   = node.children[3]
-      default = node.children[4]
-      if default != nil
-        if @@rewriting > 0
-          $stderr.puts "REWRITING ALREADY"
-        else
+    if @@rewriting == 0
+      if node.receiver_is?(:Ops) && node.message.to_s.start_with?("get")
+        if replace_ops_get(node)
           count = 1
-          @@rewriting += count
-          fetch = Parser::AST::Node.new(:send, [object, :fetch, index, default])
-
-          $stderr.puts "REWRITTEN:"
-          $stderr.puts fetch.inspect
-
-          replace(node.loc.expression, Unparser.unparse(fetch))
         end
+      elsif node.receiver_is?(:Ops) && node.message == :add
       end
     end
 
+    @@rewriting += count
     super
     @@rewriting -= count
+  end
+
+  # @returns true if did replacement
+  def replace_ops_get(node)
+    $stderr.puts node.inspect
+
+    receiver, message, object, index, default = * node
+    return false if default.nil?
+    fetch = Parser::AST::Node.new(:send, [object, :fetch, index, default])
+
+    $stderr.puts "REWRITTEN:"
+    $stderr.puts fetch.inspect
+
+    replace(node.loc.expression, Unparser.unparse(fetch))
+    true
   end
 end
