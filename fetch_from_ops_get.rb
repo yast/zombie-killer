@@ -23,6 +23,29 @@ class Parser::AST::Node
   end
 end
 
+REPLACERS = [
+  [:Ops, /^get/, :replace_ops_get],
+  [:Ops, :bitwise_not,   :replace_ops_bitwise_not],
+
+]
+
+BINARY_OPERATORS = {
+  add:              :+,
+  bitwise_and:      :&,
+  bitwise_or:       :|,
+  bitwise_xor:      :^,
+  divide:           :/,
+  greater_or_equal: :>=,
+  greater_than:     :>,
+  less_or_equal:    :<=,
+  less_than:        :<,
+  modulo:           :%,
+  multiply:         :*,
+  shift_left:       :<<,
+  shift_right:      :>>,
+  subtract:         :-,
+}
+
 class FetchFromOpsGet < Parser::Rewriter
   def dump(node)
     pp node
@@ -45,11 +68,19 @@ class FetchFromOpsGet < Parser::Rewriter
   def on_send(node)
     count = 0
     if @@rewriting == 0
-      if node.receiver_is?(:Ops) && node.message.to_s.start_with?("get")
-        if replace_ops_get(node)
-          count = 1
+      REPLACERS.find do |receiver, message, replacer|
+        match = node.receiver_is?(receiver) && message === node.message
+        if match
+          if self.send(replacer, node)
+            count = 1
+          end
         end
-      elsif node.receiver_is?(:Ops) && node.message == :add
+        match
+      end
+
+      if node.receiver_is?(:Ops) && BINARY_OPERATORS.has_key?(node.message)
+        replace_binary_operator(node)
+        count = 1
       end
     end
 
@@ -58,18 +89,36 @@ class FetchFromOpsGet < Parser::Rewriter
     @@rewriting -= count
   end
 
-  # @returns true if did replacement
-  def replace_ops_get(node)
-    $stderr.puts node.inspect
+  # @returns true
+  def replace_node(old_node, new_node)
+#    $stderr.puts "REPLACING:"
+#    $stderr.puts old_node.inspect
 
-    receiver, message, object, index, default = * node
-    return false if default.nil?
-    fetch = Parser::AST::Node.new(:send, [object, :fetch, index, default])
+#    $stderr.puts "REWRITTEN:"
+#    $stderr.puts new_node.inspect
 
-    $stderr.puts "REWRITTEN:"
-    $stderr.puts fetch.inspect
-
-    replace(node.loc.expression, Unparser.unparse(fetch))
+    replace(old_node.loc.expression, Unparser.unparse(new_node))
     true
   end
+
+  # @returns true if did replacement
+  def replace_ops_get(node)
+    ops, get, object, index, default = * node
+    return false if default.nil?
+    replace_node node, Parser::AST::Node.new(:send, [object, :fetch, index, default])
+  end
+
+  # @returns true if did replacement
+  def replace_ops_bitwise_not(node)
+    ops, op, a = * node
+    replace_node node, Parser::AST::Node.new(:send, [a, :~])
+  end
+
+  # @returns true if did replacement
+  def replace_binary_operator(node)
+    ops, op, a, b = * node
+    new_op = BINARY_OPERATORS[op]
+    replace_node node, Parser::AST::Node.new(:send, [a, new_op, b])
+  end
+
 end
