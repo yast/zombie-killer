@@ -1,0 +1,74 @@
+21993 Ops.GET
+8984 Ops.get_string
+7199 Ops.add
+6759 Builtins.y2milestone
+5566 Ops.set
+4390 Ops.get
+2838 Builtins.sformat
+2451 Builtins.size
+2303 Builtins.add
+2011 Builtins.foreach
+1704 Ops.get_integer
+1383 Ops.greater_than
+1261 Ops.get_list
+ 988 Builtins.y2error
+ 984 Builtins.y2debug
+ 955 Ops.get_boolean
+ 693 Builtins.haskey
+ 597 Builtins.contains
+ 586 Builtins.filter
+ 575 Ops.get_symbol
+ 501 Ops.get_map
+ 469 Builtins.substring
+ 454 Builtins.maplist
+ 449 Builtins.splitstring
+ 423 Ops.subtract
+ 306 Ops.less_than
+ 278 Builtins.tostring
+ 269 Builtins.tointeger
+ 247 Builtins.regexpmatch
+ 213 Builtins.remove
+ 212 Builtins.sleep
+ 199 Ops.multiply
+ 195 Builtins.union
+ 186 Builtins.y2warning
+ 176 Builtins.mergestring
+ 169 Builtins.isempty
+ 165 Ops.divide
+ 153 Builtins.tolower
+ 126 Builtins.issubstring
+ 124 Builtins.regexpsub
+ 123 Builtins.search
+ 122 Builtins.find
+ 109 Builtins.eval
+  92 Ops.greater_or_equal
+  91 Ops.less_or_equal
+  82 Builtins.sort
+  73 Ops.get_locale
+  70 Builtins.filterchars
+  67 Builtins.deletechars
+  61 Ops.get_term
+  60 Builtins.topath
+  45 Builtins.merge
+  44 Builtins.toset
+  34 Builtins.toupper
+  33 Builtins.y2internal
+  32 Builtins.findfirstof
+  26 Builtins.prepend
+  24 Builtins.listmap
+  23 Builtins.toterm
+  20 Ops.is_list?
+  18 Ops.is_symbol?
+  15 Builtins.mapmap
+  14 Ops.is_map?
+  13 Builtins.flatten
+  12 Builtins.sublist
+  11 Builtins.dgettext
+   7 Ops.modulo
+   6 Ops.comparable_object
+   5 Builtins.regexptokenize
+   4 Builtins.y2useritem
+   3 Builtins.regexppos
+   2 Ops.bitwise_and
+   1 Builtins.crypt
+   0 (str "/include")))))))
