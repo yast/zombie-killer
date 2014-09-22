@@ -20,10 +20,11 @@
 # (Ops.GET is a sum over all flavors of Ops.get)
 
 require "pp"
+require_relative "./lib/code_histogram"
 
 class ZombieCounter < Parser::Rewriter
   def initialize(*args)
-    @@counts = {}
+    @@counts = CodeHistogram.new
     super(*args)
   end
 
@@ -38,28 +39,22 @@ class ZombieCounter < Parser::Rewriter
       modul = receiver.children[1]
       if [:Ops, :Builtins].include? modul
         method = "#{modul}.#{message}"
-        unless @@counts[method]
-          @@counts[method] = 0
-        end
-        @@counts[method] += 1
+        @@counts.increment(method)
       end
     end
   end
 
   def self.aggregate_ops_get
     total = 0
-    @@counts.each do |method, count|
+    @@counts.counts.each do |method, count|
       total += count if method.start_with? "Ops.get"
     end
-    @@counts["Ops.GET"] = total
+    @@counts.increment("Ops.GET", total)
   end
 
   def self.report
     aggregate_ops_get
-    count_to_method = @@counts.invert
-    count_to_method.keys.sort.each do |c|
-      $stderr.printf("%4d %s\n", c, count_to_method[c])
-    end
+    @@counts.print_by_frequency($stderr)
   end
 end
 
