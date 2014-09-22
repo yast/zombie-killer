@@ -1,6 +1,7 @@
 #! /usr/bin/env ruby
 # Usage: all_zombie_counter [FILES]
 #   if no FILES are given, finds all *.rb files under CWD
+require "parallel"
 require "pp"
 require_relative "./lib/code_histogram"
 
@@ -10,14 +11,15 @@ if filenames.empty?
 end
 
 RUBY_REWRITE = "ruby-rewrite2.0"
-ONE_ZOMBIE_COUNTER = "zombie_counter.rb"
+ONE_ZOMBIE_COUNTER = "ops_add_counter.rb"
 # @returns [Array] lines
 def count_zombies_in_file(filename)
   cmd = "#{RUBY_REWRITE} 2>&1 >/dev/null -l #{ONE_ZOMBIE_COUNTER} #{filename}"
   `#{cmd}`.lines
 end
 
-histograms = filenames.map do |fn|
+NPROC = `nproc`.chomp.to_i
+histograms = Parallel.map(filenames, :in_threads => NPROC) do |fn|
   CodeHistogram.parse_by_frequency(count_zombies_in_file(fn))
 end
 
