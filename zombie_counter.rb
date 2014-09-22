@@ -2,7 +2,7 @@
 # the wrappers defined in yast2-ruby-bindings
 #
 # Usage:
-#   ruby-rewrite2.0 2>&1 >/dev/null-l zombie_counter.rb /usr/share/YaST2/modules/Storage.rb
+#   ruby-rewrite2.0 2>&1 >/dev/null -l zombie_counter.rb /usr/share/YaST2/modules/Storage.rb
 #
 # Output:
 #

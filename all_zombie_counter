@@ -1,0 +1,28 @@
+#! /usr/bin/env ruby
+# Usage: all_zombie_counter [FILES]
+#   if no FILES are given, finds all *.rb files under CWD
+require "pp"
+require_relative "./lib/code_histogram"
+
+filenames = ARGV
+if filenames.empty?
+  filenames = `find -name "*.rb"`.split "\n"
+end
+
+RUBY_REWRITE = "ruby-rewrite2.0"
+ONE_ZOMBIE_COUNTER = "zombie_counter.rb"
+# @returns [Array] lines
+def count_zombies_in_file(filename)
+  cmd = "#{RUBY_REWRITE} 2>&1 >/dev/null -l #{ONE_ZOMBIE_COUNTER} #{filename}"
+  `#{cmd}`.lines
+end
+
+histograms = filenames.map do |fn|
+  CodeHistogram.parse_by_frequency(count_zombies_in_file(fn))
+end
+
+total = histograms.reduce(CodeHistogram.new) do |memo, obj|
+  memo.merge! obj
+  memo
+end
+total.print_by_frequency($stdout)

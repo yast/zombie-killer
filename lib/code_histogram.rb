@@ -17,4 +17,20 @@ class CodeHistogram
       io.printf("%4d %s\n", c, count_to_method[c])
     end
   end
+
+  def self.parse_by_frequency(lines)
+    histogram = CodeHistogram.new
+    lines.each do |line|
+      /^\s*(\d*)\s*(.*)/.match(line.chomp) do |m|
+        histogram.increment(m[2], m[1].to_i)
+      end
+    end
+    histogram
+  end
+
+  def merge!(other)
+    counts.merge!(other.counts) do |key, count, other_count|
+      count + other_count
+    end
+  end
 end
