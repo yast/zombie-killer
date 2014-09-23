@@ -53,7 +53,7 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   def is_call(node, namespace, message)
     n_receiver, n_message = *node
-    n_receiver.type == :const &&
+    n_receiver && n_receiver.type == :const &&
       n_receiver.children[0] == nil &&
       n_receiver.children[1] == namespace &&
       n_message == message
