@@ -24,6 +24,12 @@ describe ZombieKiller do
       expect(subject.kill(c1)).to eq c2
     end
 
+    it "translates Ops.add of parenthesized plus and literal" do
+      c1 = 'Ops.add(("Hello" + " "), "World")'
+      c2 = '("Hello" + " ") + "World"'
+      expect(subject.kill(c1)).to eq c2
+    end
+
     it "translates Ops.add of literal and plus" do
       c1 = 'Ops.add("Hello", " " + "World")'
       c2 = '"Hello" + (" " + "World")'
