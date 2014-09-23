@@ -83,7 +83,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def nice_literal(node)
-    node.type == :str
+    node.type == :str || node.type == :int
   end
 
   def nice_variable(node)

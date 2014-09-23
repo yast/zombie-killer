@@ -39,6 +39,20 @@ v = Ops.add("Hello", "World")
 v = "Hello" + "World"
 ```
 
+Zombie Killer translates `Ops.add` of two integer literals.
+
+**Original**
+
+```ruby
+Ops.add(40, 2)
+```
+
+**Translated**
+
+```ruby
+40 + 2
+```
+
 Zombie Killer does not translate Ops.add if any argument is ugly.
 
 **Original**
