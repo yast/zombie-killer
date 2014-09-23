@@ -119,7 +119,14 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def replace_node(old_node, new_node)
-    replace(old_node.loc.expression, Unparser.unparse(new_node))
+    source_range = old_node.loc.expression
+    if !contains_comment?(source_range.source)
+      replace(source_range, Unparser.unparse(new_node))
+    end
+  end
+
+  def contains_comment?(string)
+    ret = /^[^'"\n]*#/.match(string)
   end
 end
 
