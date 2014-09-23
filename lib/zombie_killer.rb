@@ -77,17 +77,31 @@ class ZombieKillerRewriter < Parser::Rewriter
 end
 
 class ZombieKiller
-  def kill(s)
-    rewriter = ZombieKillerRewriter.new
-    rewrite(s, rewriter)
+  # @returns new string
+  def kill_string(code)
+    buffer = Parser::Source::Buffer.new("(inline code)")
+    buffer.source = code
+
+    kill_buffer(buffer)
+  end
+  alias_method :kill, :kill_string
+
+  # @param new_filename may be the same as *filename*
+  def kill_file(filename, new_filename)
+    buffer = Parser::Source::Buffer.new(filename)
+    buffer.read
+
+    new_string = kill_buffer(buffer)
+
+    File.write(new_filename, new_string)
   end
 
   private
 
-  def rewrite(code, rewriter)
-    buffer = Parser::Source::Buffer.new("(inline code)")
-    buffer.source = code
+  # @returns String
+  def kill_buffer(buffer)
     parser = Parser::CurrentRuby.new
+    rewriter = ZombieKillerRewriter.new
 
     rewriter.rewrite(buffer, parser.parse(buffer))
   end

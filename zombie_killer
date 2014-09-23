@@ -1,0 +1,8 @@
+#! /usr/bin/env ruby
+# Usage: zombie_killer OLD_FILE NEW_FILE
+#   they may be the same file
+
+$:.unshift File.expand_path("../lib", __FILE__)
+require "zombie_killer"
+
+ZombieKiller.new.kill_file(ARGV[0], ARGV[1])
