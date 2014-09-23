@@ -16,4 +16,18 @@ describe ZombieKiller do
       expect(subject.kill(c1)).to eq c2
     end
   end
+
+  context "in case arguments are translated already" do
+    it "translates a chain of Ops.add of literals" do
+      c1 = 'Ops.add("Hello" + " ", "World")'
+      c2 = '("Hello" + " ") + "World"'
+      expect(subject.kill(c1)).to eq c2
+    end
+
+    it "translates a right-assoc chain of Ops.add of literals" do
+      c1 = 'Ops.add("Hello", " " + "World")'
+      c2 = '"Hello" + (" " + "World")'
+      expect(subject.kill(c1)).to eq c2
+    end
+  end
 end

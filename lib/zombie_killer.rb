@@ -73,11 +73,29 @@ class ZombieKillerRewriter < Parser::Rewriter
     node.type == :lvar && scope[node.children.first]
   end
 
+  # Methods that preserve niceness if all their arguments are nice
+  # These are global, called with a nil receiver
+  NICE_GLOBAL_METHODS = {
+    # message, number of arguments
+    :_ => 1,
+  }.freeze
+
+  NICE_OPERATORS = {
+    # message, number of arguments (other than receiver)
+    :+ => 1,
+  }.freeze
+
   def nice_send(node)
     return false unless node.type == :send
     receiver, message, *args = *node
 
-    receiver.nil? && message == :_ && args.size == 1 && nice(args.first)
+    if receiver.nil?
+      arity = NICE_GLOBAL_METHODS.fetch(message, -1)
+    else
+      return false unless nice(receiver)
+      arity = NICE_OPERATORS.fetch(message, -1)
+    end
+    return args.size == arity && args.all?{ |a| nice(a) }
   end
 
   def replace_node(old_node, new_node)
