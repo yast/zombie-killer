@@ -29,4 +29,19 @@ describe ZombieKiller do
       expect(ZombieKiller.new.kill(c)).to eq c
     end
   end
+
+  context "multiple defs" do
+    it "does not confuse variables across defs" do
+      c = <<EOS
+def a
+  v = "literal"
+end
+
+def b(v)
+  Ops.add(v, "literal")
+end
+EOS
+      expect(ZombieKiller.new.kill(c)).to eq c
+    end
+  end
 end
