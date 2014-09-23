@@ -30,8 +30,6 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.push VariableScope.new
     super
     @scopes.pop
-  rescue => e
-    oops(node, e)
   end
 
   # local(?) variable assignment
@@ -60,7 +58,8 @@ class ZombieKillerRewriter < Parser::Rewriter
   private
 
   def oops(node, exception)
-    puts "Offending node: #{node} @ #{node.loc.expression}"
+    puts "Node exception @ #{node.loc.expression}"
+    puts "Offending node: #{node.inspect}"
     raise exception
   end
 
