@@ -253,3 +253,28 @@ Ops.add("Hello", " " + "World")
 ```ruby
 "Hello" + (" " + "World")
 ```
+
+Formatting
+----------
+
+Zombie Killer does not translate `Ops.add` if any argument has a comment.
+
+**Original**
+
+```ruby
+Ops.add(
+  "Hello",
+  # foo
+  "World"
+)
+```
+
+**Translated**
+
+```ruby
+Ops.add(
+  "Hello",
+  # foo
+  "World"
+)
+```
