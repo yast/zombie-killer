@@ -30,6 +30,8 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.push VariableScope.new
     super
     @scopes.pop
+  rescue => e
+    oops(node, e)
   end
 
   # local(?) variable assignment
@@ -37,6 +39,8 @@ class ZombieKillerRewriter < Parser::Rewriter
     super
     name, value = * node
     scope[name] = nice(value)
+  rescue => e
+    oops(node, e)
   end
 
   def on_send(node)
@@ -49,9 +53,16 @@ class ZombieKillerRewriter < Parser::Rewriter
         replace_node node, Parser::AST::Node.new(:send, [a, new_op, b])
       end
     end
+  rescue => e
+    oops(node, e)
   end
 
   private
+
+  def oops(node, exception)
+    puts "Offending node: #{node} @ #{node.loc.expression}"
+    raise exception
+  end
 
   def is_call(node, namespace, message)
     n_receiver, n_message = *node
