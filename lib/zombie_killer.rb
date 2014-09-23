@@ -105,31 +105,24 @@ end
 
 class ZombieKiller
   # @returns new string
-  def kill_string(code)
-    buffer = Parser::Source::Buffer.new("(inline code)")
-    buffer.source = code
+  def kill_string(code, filename = "(inline code)")
+    while true
+      parser = Parser::CurrentRuby.new
+      rewriter = ZombieKillerRewriter.new
 
-    kill_buffer(buffer)
+      old_code = code
+      buffer = Parser::Source::Buffer.new(filename)
+      buffer.source = code
+      code = rewriter.rewrite(buffer, parser.parse(buffer))
+      return code if code == old_code
+    end
   end
   alias_method :kill, :kill_string
 
   # @param new_filename may be the same as *filename*
   def kill_file(filename, new_filename)
-    buffer = Parser::Source::Buffer.new(filename)
-    buffer.read
-
-    new_string = kill_buffer(buffer)
+    new_string = kill_string(File.read(filename), filename)
 
     File.write(new_filename, new_string)
-  end
-
-  private
-
-  # @returns String
-  def kill_buffer(buffer)
-    parser = Parser::CurrentRuby.new
-    rewriter = ZombieKillerRewriter.new
-
-    rewriter.rewrite(buffer, parser.parse(buffer))
   end
 end
