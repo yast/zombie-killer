@@ -106,15 +106,12 @@ end
 class ZombieKiller
   # @returns new string
   def kill_string(code, filename = "(inline code)")
-    while true
-      parser = Parser::CurrentRuby.new
+    fixed_point(code) do |code|
+      parser   = Parser::CurrentRuby.new
       rewriter = ZombieKillerRewriter.new
-
-      old_code = code
-      buffer = Parser::Source::Buffer.new(filename)
+      buffer   = Parser::Source::Buffer.new(filename)
       buffer.source = code
-      code = rewriter.rewrite(buffer, parser.parse(buffer))
-      return code if code == old_code
+      rewriter.rewrite(buffer, parser.parse(buffer))
     end
   end
   alias_method :kill, :kill_string
@@ -124,5 +121,15 @@ class ZombieKiller
     new_string = kill_string(File.read(filename), filename)
 
     File.write(new_filename, new_string)
+  end
+
+  private
+
+  def fixed_point(x, &lambda_x)
+    while true
+      y = lambda_x.call(x)
+      return y if y == x
+      x = y
+    end
   end
 end
