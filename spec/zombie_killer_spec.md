@@ -145,3 +145,36 @@ def b(v)
   Ops.add(v, "literal")
 end
 ```
+
+Localized Literals
+------------------
+
+### Argument is a variable set to a localized literal
+
+Zombie Killer translates `Ops.add(variable, literal)`.
+
+**Original**
+
+```ruby
+v = _("Hello"); Ops.add(v, "World")
+```
+
+**Translated**
+
+```ruby
+v = _("Hello"); v + "World"
+```
+
+Zombie Killer translates `Ops.add(variable, localized literal)`.
+
+**Original**
+
+```ruby
+v = _("Hello"); Ops.add(v, _("World"))
+```
+
+**Translated**
+
+```ruby
+v = _("Hello"); v + _("World")
+```
