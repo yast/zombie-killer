@@ -41,6 +41,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   def on_vasgn(node)
     super
     name, value = * node
+    return if value.nil? # and-asgn, or-asgn do this
     scope[name] = nice(value)
   rescue => e
     oops(node, e)
