@@ -77,7 +77,8 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def nice(node)
-    nice_literal(node) || nice_variable(node) || nice_send(node)
+    nice_literal(node) || nice_variable(node) || nice_send(node) ||
+      nice_begin(node)
   end
 
   def nice_literal(node)
@@ -111,6 +112,10 @@ class ZombieKillerRewriter < Parser::Rewriter
       arity = NICE_OPERATORS.fetch(message, -1)
     end
     return args.size == arity && args.all?{ |a| nice(a) }
+  end
+
+  def nice_begin(node)
+    node.type == :begin && nice(node.children.last)
   end
 
   def replace_node(old_node, new_node)
