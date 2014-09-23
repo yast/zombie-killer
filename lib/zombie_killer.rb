@@ -34,11 +34,13 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   # local(?) variable assignment
   def on_vasgn(node)
+    super
     name, value = * node
     scope[name] = nice(value)
   end
 
   def on_send(node)
+    super
     if is_call(node, :Ops, :add)
       new_op = :+
 
