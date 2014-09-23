@@ -178,3 +178,78 @@ v = _("Hello"); Ops.add(v, _("World"))
 ```ruby
 v = _("Hello"); v + _("World")
 ```
+
+Add Chains
+----------
+
+### Since we have implemented iterated translation
+
+Zombie Killer translates a chain of `Ops.add` of literals.
+
+**Original**
+
+```ruby
+Ops.add(Ops.add("Hello", " "), "World")
+```
+
+**Translated**
+
+```ruby
+("Hello" + " ") + "World"
+```
+Zombie Killer translates a right-assoc chain of `Ops.add` of literals.
+
+**Original**
+
+```ruby
+Ops.add("Hello", Ops.add(" ", "World"))
+```
+
+**Translated**
+
+```ruby
+"Hello" + (" " + "World")
+```
+### In case arguments are translated already
+
+Zombie Killer translates `Ops.add` of plus and literal.
+
+**Original**
+
+```ruby
+Ops.add("Hello" + " ", "World")
+```
+
+**Translated**
+
+```ruby
+("Hello" + " ") + "World"
+```
+
+Zombie Killer translates `Ops.add` of parenthesized plus and literal.
+
+**Original**
+
+```ruby
+Ops.add(("Hello" + " "), "World")
+```
+
+**Translated**
+
+```ruby
+("Hello" + " ") + "World"
+```
+
+Zombie Killer translates `Ops.add` of literal and plus.
+
+**Original**
+
+```ruby
+Ops.add("Hello", " " + "World")
+```
+
+**Translated**
+
+```ruby
+"Hello" + (" " + "World")
+```
