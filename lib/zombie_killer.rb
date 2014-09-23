@@ -32,6 +32,11 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.pop
   end
 
+  def on_if(node)
+    # FIXME need separate scopes for the branches
+    super
+  end
+
   # local(?) variable assignment
   def on_vasgn(node)
     super
