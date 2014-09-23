@@ -60,7 +60,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def nice(node)
-    nice_literal(node) || nice_variable(node)
+    nice_literal(node) || nice_variable(node) || nice_send(node)
   end
 
   def nice_literal(node)
@@ -69,6 +69,13 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   def nice_variable(node)
     node.type == :lvar && scope[node.children.first]
+  end
+
+  def nice_send(node)
+    return false unless node.type == :send
+    receiver, message, *args = *node
+
+    receiver.nil? && message == :_ && args.size == 1 && nice(args.first)
   end
 
   def replace_node(old_node, new_node)
