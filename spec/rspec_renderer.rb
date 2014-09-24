@@ -36,6 +36,8 @@ class RSpecRenderer < Redcarpet::Render::Base
     nil
   end
 
+  HEREDOC = "<<" # without this indirection Emacs higlighter would get confused
+
   def block_code(code, language)
     case @next_block_type
       when :original
@@ -54,11 +56,11 @@ class RSpecRenderer < Redcarpet::Render::Base
 
       lines << "" if @separate
       lines << "it \"#{@description}\" do"
-      lines << "  original_code = cleanup(<<-EOT)"
+      lines << "  original_code = cleanup(#{HEREDOC}-EOT)"
       lines << indent(@original_code, 2)
       lines << "  EOT"
       lines << ""
-      lines << "  translated_code = cleanup(<<-EOT)"
+      lines << "  translated_code = cleanup(#{HEREDOC}-EOT)"
       lines << indent(@translated_code, 2)
       lines << "  EOT"
       lines << ""
