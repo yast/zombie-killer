@@ -1,10 +1,11 @@
 # -*- ruby -*-
+require File.expand_path("../lib/version", __FILE__)
 
 Gem::Specification.new do |spec|
 
   # gem name and description
   spec.name	= "zombie-killer"
-  spec.version	= "0.1.0"
+  spec.version	= ZombieKiller::VERSION
   spec.summary = "Translate YCP-like library calls (Ops.*, Builtins.*) to idiomatic Ruby"
   spec.license  = "MIT"
   spec.authors	= ["Martin Vidner", "David Majda"]
