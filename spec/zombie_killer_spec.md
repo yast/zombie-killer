@@ -292,3 +292,32 @@ Ops.add(
   "World"
 )
 ```
+
+Blocks and Cycles
+-----------------
+
+Zombie Killer does not translate anything in a `def` that contains any of:
+`rescue`, `ensure`, `block`, `while`, while-post...
+FIXME actually we should whitelist the nodes we know to be safe!
+That is because doing that properly requires data flow analysis which we
+do not do yet.
+
+**Original**
+
+```ruby
+v = "A"
+while cond
+  w = Ops.add(v, "A")
+  v = uglify
+end
+```
+
+**Translated**
+
+```ruby
+v = "A"
+while cond
+  w = Ops.add(v, "A")
+  v = uglify
+end
+```
