@@ -55,13 +55,7 @@ Ops.add(40, 2)
 
 Zombie Killer does not translate Ops.add if any argument is ugly.
 
-**Original**
-
-```ruby
-Ops.add("Hello", world)
-```
-
-**Translated**
+**Unchanged**
 
 ```ruby
 Ops.add("Hello", world)
@@ -120,13 +114,7 @@ v = "Hello"; v2 = v; v2 + "World"
 
 Zombie Killer does not translate `Ops.add(variable, literal)`.
 
-**Original**
-
-```ruby
-v = "Hello"; v = f(v); Ops.add(v, "World")
-```
-
-**Translated**
+**Unchanged**
 
 ```ruby
 v = "Hello"; v = f(v); Ops.add(v, "World")
@@ -136,19 +124,7 @@ v = "Hello"; v = f(v); Ops.add(v, "World")
 
 Zombie Killer does not confuse variables across `def`s.
 
-**Original**
-
-```ruby
-def a
-  v = "literal"
-end
-
-def b(v)
-  Ops.add(v, "literal")
-end
-```
-
-**Translated**
+**Unchanged**
 
 ```ruby
 def a
@@ -273,17 +249,7 @@ Formatting
 
 Zombie Killer does not translate `Ops.add` if any argument has a comment.
 
-**Original**
-
-```ruby
-Ops.add(
-  "Hello",
-  # foo
-  "World"
-)
-```
-
-**Translated**
+**Unchanged**
 
 ```ruby
 Ops.add(
@@ -302,17 +268,7 @@ FIXME actually we should whitelist the nodes we know to be safe!
 That is because doing that properly requires data flow analysis which we
 do not do yet.
 
-**Original**
-
-```ruby
-v = "A"
-while cond
-  w = Ops.add(v, "A")
-  v = uglify
-end
-```
-
-**Translated**
+**Unchanged**
 
 ```ruby
 v = "A"
