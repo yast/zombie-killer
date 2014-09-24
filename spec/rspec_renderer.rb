@@ -54,8 +54,9 @@ class RSpecRenderer < Redcarpet::Render::Base
     if @original_code && @translated_code
       lines = []
 
+      it = @description =~ /XFAIL/ ? "xit" : "it"
       lines << "" if @separate
-      lines << "it \"#{@description}\" do"
+      lines << "#{it} \"#{@description}\" do"
       lines << "  original_code = cleanup(#{HEREDOC}-EOT)"
       lines << indent(@original_code, 2)
       lines << "  EOT"
