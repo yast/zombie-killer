@@ -1,0 +1,22 @@
+#!/usr/bin/env ruby
+
+require "docopt"
+
+require_relative "../lib/zombie_killer"
+
+doc = <<-EOT
+Zombie Killer -- tool to kill YCP zombies
+
+Usage: zk <files>...
+EOT
+
+begin
+  options = Docopt.docopt(doc, help: true, version: ZombieKiller::VERSION)
+
+  killer = ZombieKiller.new
+  options["<files>"].each do |file|
+    killer.kill_file(file, file)
+  end
+rescue Docopt::Exit => e
+  abort e.message
+end
