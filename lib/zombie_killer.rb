@@ -2,6 +2,8 @@ require "parser"
 require "parser/current"
 require "unparser"
 
+require_relative "version"
+
 # Tracks niceness for local variables visible at certain point
 class VariableScope < Hash
   # @return [Boolean] nice
