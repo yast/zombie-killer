@@ -32,6 +32,8 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.push VariableScope.new
     super
     @scopes.pop
+  rescue => e
+    oops(node, e)
   end
 
   def on_if(node)
@@ -45,8 +47,6 @@ class ZombieKillerRewriter < Parser::Rewriter
     name, value = * node
     return if value.nil? # and-asgn, or-asgn do this
     scope[name] = nice(value)
-  rescue => e
-    oops(node, e)
   end
 
   def on_send(node)
@@ -59,8 +59,6 @@ class ZombieKillerRewriter < Parser::Rewriter
         replace_node node, Parser::AST::Node.new(:send, [a, new_op, b])
       end
     end
-  rescue => e
-    oops(node, e)
   end
 
   private
