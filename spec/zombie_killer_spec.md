@@ -262,12 +262,29 @@ Ops.add(
 Blocks and Cycles
 -----------------
 
-Zombie Killer does not translate anything in a `def` that contains any of:
-XFAIL
-`rescue`, `ensure`, `block`, `while`, while-post...
+Too Complex Code is one that contains `rescue`, `ensure`,
+`block`, `while`, while-post...
 FIXME actually we should whitelist the nodes we know to be safe!
-That is because doing that properly requires data flow analysis which we
-do not do yet.
+
+Translating that properly requires data flow analysis which we do not do yet.
+
+Zombie Killer does not translate anything in a `def` that contains
+Too Complex Code.
+
+**Unchanged**
+
+```ruby
+def d
+  v = "A"
+  while cond
+    w = Ops.add(v, "A")
+    v = uglify
+  end
+end
+```
+
+Zombie killer does not translate anything in the outer scope that contains
+Too Complex Code.
 
 **Unchanged**
 

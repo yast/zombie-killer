@@ -17,10 +17,22 @@ class VariableScope < Hash
   end
 end
 
+# We have encountered code that does satisfy our simplifying assumptions,
+# translating it would not be correct.
+class TooComplexToTranslateError < Exception
+end
+
 class ZombieKillerRewriter < Parser::Rewriter
   def initialize
     outer_scope = VariableScope.new
     @scopes = [outer_scope]
+  end
+
+  def rewrite(buffer, ast)
+    super
+  rescue TooComplexToTranslateError
+    puts "Outer scope is too complex to translate, sorry"
+    buffer.source
   end
 
   # currently visible scope
@@ -32,6 +44,9 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.push VariableScope.new
     super
     @scopes.pop
+  rescue TooComplexToTranslateError
+    name = node.children.first
+    puts "def #{name} is too complex to translate, sorry"
   rescue => e
     oops(node, e)
   end
@@ -59,6 +74,10 @@ class ZombieKillerRewriter < Parser::Rewriter
         replace_node node, Parser::AST::Node.new(:send, [a, new_op, b])
       end
     end
+  end
+
+  def on_while(node)
+    raise TooComplexToTranslateError
   end
 
   private
