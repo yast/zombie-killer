@@ -8,7 +8,7 @@ class RSpecRenderer < Redcarpet::Render::Base
 
     @level = 0
     @separate = false
-    @next_block_type = :original
+    @next_block_type = :unknown
   end
 
   def header(text, header_level)
@@ -27,7 +27,9 @@ class RSpecRenderer < Redcarpet::Render::Base
   end
 
   def paragraph(text)
-    if text !~ /^\*\*.*\*\*$/
+    if text =~ /^\*\*(.*)\*\*$/
+      @next_block_type = $1.downcase.to_sym
+    else
       @description = text.split(/\.(\s+|$)/).first.sub(/^Zombie Killer /, "")
     end
 
@@ -38,13 +40,14 @@ class RSpecRenderer < Redcarpet::Render::Base
     case @next_block_type
       when :original
         @original_code = code[0..-2]
-        @next_block_type = :translated
       when :translated
         @translated_code = code[0..-2]
-        @next_block_type = :original
+      when :unchanged
+        @original_code = @translated_code = code[0..-2]
       else
         raise "Invalid next code block type: #@next_block_type."
     end
+    @next_block_type = :unknown
 
     if @original_code && @translated_code
       lines = []
