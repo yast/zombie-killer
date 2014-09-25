@@ -2,7 +2,7 @@
 # the wrappers defined in yast2-ruby-bindings
 #
 require "pp"
-require_relative "../lib/code_histogram"
+require_relative "../lib/zombie_killer/code_histogram"
 
 class OpsAddCounter < Parser::Rewriter
   def initialize(*args)

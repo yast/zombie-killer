@@ -1,5 +1,5 @@
 # -*- ruby -*-
-require File.expand_path("../lib/version", __FILE__)
+require File.expand_path("../lib/zombie_killer/version", __FILE__)
 
 Gem::Specification.new do |spec|
 

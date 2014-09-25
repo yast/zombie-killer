@@ -3,7 +3,7 @@
 #   if no FILES are given, finds all *.rb files under CWD
 require "parallel"
 require "pp"
-require_relative "../lib/code_histogram"
+require_relative "../lib/zombie_killer/code_histogram"
 
 filenames = ARGV
 if filenames.empty?
