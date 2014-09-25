@@ -15,6 +15,9 @@ Table Of Contents
 1. Literals
 1. Variables
 1. Calls Preserving Niceness
+    1. Calls Generating Niceness
+1. Translation Below Top Level
+1. Chained Translation
 1. Formatting
 1. Too Complex Code
 
@@ -98,66 +101,58 @@ Zombie Killer does not translate Ops.add if any argument is the nil literal.
 Ops.add("Hello", nil)
 ```
 
-Literal Variables
------------------
+Variables
+---------
 
-### One argument is a variable set to a literal
+If a local variable is assigned a nice value, we remember that.
 
-Zombie Killer translates `Ops.add(variable, literal)`.
+Zombie Killer translates `Ops.add(nice_variable, literal)`.
 
 **Original**
 
 ```ruby
-v = "Hello"; Ops.add(v, "World")
+v = "Hello"
+Ops.add(v, "World")
 ```
 
 **Translated**
 
 ```ruby
-v = "Hello"; v + "World"
+v = "Hello"
+v + "World"
 ```
 
-Zombie Killer translates `Ops.add(literal, variable)`.
+Zombie Killer translates `Ops.add(nontrivially_nice_variable, literal)`.
 
 **Original**
 
 ```ruby
-v = "World"; Ops.add("Hello", v)
+v  = "Hello"
+v2 = v
+v  = uglify
+Ops.add(v2, "World")
 ```
 
 **Translated**
 
 ```ruby
-v = "World"; "Hello" + v
+v  = "Hello"
+v2 = v
+v  = uglify
+v2 + "World"
 ```
 
-### Argument is variable set to a literal, passed via another var
+We have to take care to revoke a variable's niceness if appropriate.
 
-Zombie Killer translates `Ops.add(variable, literal)`.
-
-**Original**
-
-```ruby
-v = "Hello"; v2 = v; Ops.add(v2, "World")
-```
-
-**Translated**
-
-```ruby
-v = "Hello"; v2 = v; v2 + "World"
-```
-
-### One argument is a variable set to a literal but mutated
-
-Zombie Killer does not translate `Ops.add(variable, literal)`.
+Zombie Killer does not translate `Ops.add(mutated_variable, literal)`.
 
 **Unchanged**
 
 ```ruby
-v = "Hello"; v = f(v); Ops.add(v, "World")
+v = "Hello"
+v = f(v)
+Ops.add(v, "World")
 ```
-
-### Multiple `def`s
 
 Zombie Killer does not confuse variables across `def`s.
 
@@ -173,70 +168,82 @@ def b(v)
 end
 ```
 
-Localized Literals
-------------------
+Calls Preserving Niceness
+-------------------------
 
-### Argument is a variable set to a localized literal
-
-Zombie Killer translates `Ops.add(variable, literal)`.
+A localized string literal is nice.
 
 **Original**
 
 ```ruby
-v = _("Hello"); Ops.add(v, "World")
+v = _("Hello")
+Ops.add(v, "World")
 ```
 
 **Translated**
 
 ```ruby
-v = _("Hello"); v + "World"
+v = _("Hello")
+v + "World"
 ```
 
-Zombie Killer translates `Ops.add(variable, localized literal)`.
+### Calls Generating Niceness ###
+
+`nil?` makes any value a nice value but unfortunately it seems of
+little practical use. Even though there are two zombies that have
+boolean arguments (`Builtins.find` and `Builtins.filter`), they are
+just fine with `nil` since it is a falsey value.
+
+Translation Below Top Level
+---------------------------
+
+Zombie Killer translates a zombie nested in other calls.
 
 **Original**
 
 ```ruby
-v = _("Hello"); Ops.add(v, _("World"))
+v = 1
+foo(bar(Ops.add(v, 1), baz))
 ```
 
 **Translated**
 
 ```ruby
-v = _("Hello"); v + _("World")
+v = 1
+foo(bar(v + 1, baz))
 ```
 
-Add Chains
-----------
+Chained Translation
+-------------------
 
-### Since we have implemented iterated translation
-
-Zombie Killer translates a chain of `Ops.add` of literals.
+Zombie Killer translates a left-associative  chain of nice zombies.
 
 **Original**
 
 ```ruby
-Ops.add(Ops.add("Hello", " "), "World")
+Ops.add(Ops.add(1, 2), 3)
 ```
 
 **Translated**
 
 ```ruby
-("Hello" + " ") + "World"
+(1 + 2) + 3
 ```
-Zombie Killer translates a right-assoc chain of `Ops.add` of literals.
+
+Zombie Killer translates a right-associative chain of nice zombies.
 
 **Original**
 
 ```ruby
-Ops.add("Hello", Ops.add(" ", "World"))
+Ops.add(1, Ops.add(2, 3))
 ```
 
 **Translated**
 
 ```ruby
-"Hello" + (" " + "World")
+1 + (2 + 3)
 ```
+
 ### In case arguments are translated already
 
 Zombie Killer translates `Ops.add` of plus and literal.
@@ -296,8 +303,8 @@ Ops.add(
 )
 ```
 
-Blocks and Cycles
------------------
+Too Complex Code
+----------------
 
 Too Complex Code is one that contains `rescue`, `ensure`,
 `block`, `while`, while-post...
