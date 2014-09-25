@@ -20,7 +20,7 @@
 # (Ops.GET is a sum over all flavors of Ops.get)
 
 require "pp"
-require_relative "./lib/code_histogram"
+require_relative "../lib/code_histogram"
 
 class ZombieCounter < Parser::Rewriter
   def initialize(*args)
