@@ -7,7 +7,11 @@ require_relative "../lib/zombie_killer"
 doc = <<-EOT
 Zombie Killer -- tool to kill YCP zombies
 
-Usage: zk <files>...
+Usage: zk [options] <files>...
+
+Options:
+  -s, --stats                Also print statistics about node types.
+  -h, --help                 Print help and exit.
 EOT
 
 begin
@@ -16,6 +20,11 @@ begin
   killer = ZombieKiller.new
   options["<files>"].each do |file|
     killer.kill_file(file, file)
+
+    if options["--stats"]
+      counter = NodeTypeCounter.new(file)
+      counter.print($stderr)
+    end
   end
 rescue Docopt::Exit => e
   abort e.message
