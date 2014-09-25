@@ -1,5 +1,7 @@
 require "redcarpet"
 
+require_relative "../lib/zombie_killer"
+
 # Utility functions for manipulating code.
 module Code
   INDENT_STEP = 2
@@ -32,28 +34,47 @@ class It
   end
 end
 
+# Represents RSpec's "describe" block.
+class Describe
+  attr_reader :blocks
+
+  def initialize(attrs)
+    @description = attrs[:description]
+    @blocks      = attrs[:blocks]
+  end
+
+  def render
+    parts = []
+    parts << "describe #{@description.inspect} do"
+    if !blocks.empty?
+      parts << Code.indent(@blocks.map(&:render).join("\n\n"), 1)
+    end
+    parts << "end"
+    parts.join("\n")
+  end
+end
+
 class RSpecRenderer < Redcarpet::Render::Base
   def initialize
     super
 
-    @level = 0
-    @separate = false
     @next_block_type = :unknown
+    @describe = Describe.new(description: ZombieKiller, blocks: [])
   end
 
   def header(text, header_level)
     return nil if header_level == 1
 
-    level = header_level - 1
-    raise "Missing higher level header: #{text}" if level > @level + 1
+    if header_level > describes_depth + 1
+      raise "Missing higher level header: #{text}"
+    end
 
-    lines = []
+    describe_at_level(header_level - 1).blocks << Describe.new(
+      description: text.downcase,
+      blocks:      []
+    )
 
-    lines << pop_describe while @level >= level
-    lines << "" if @separate
-    lines << push_describe(text.downcase)
-
-    Code.join(lines)
+    nil
   end
 
   def paragraph(text)
@@ -80,22 +101,17 @@ class RSpecRenderer < Redcarpet::Render::Base
     @next_block_type = :unknown
 
     if @original_code && @translated_code
-      it = It.new(
+      current_describe.blocks << It.new(
         description: @description,
         code:        generate_test_code,
         skip:        @description =~ /XFAIL/
       )
 
-      result = auto_indent((@separate ? "\n" : "") + it.render + "\n")
-
       @original_code   = nil
       @translated_code = nil
-      @separate        = true
-
-      result
-    else
-      nil
     end
+
+    nil
   end
 
   def doc_header
@@ -104,39 +120,39 @@ class RSpecRenderer < Redcarpet::Render::Base
       "",
       "require \"spec_helper\"",
       "",
-      "describe ZombieKiller do",
     ])
   end
 
   def doc_footer
-    lines = []
-
-    lines << pop_describe while @level > 0
-    lines << "end"
-
-    Code.join(lines)
+    "#{@describe.render}\n"
   end
 
   private
 
-  def auto_indent(s)
-    Code.indent(s, @level + 1)
+  def describes_depth
+    describe = @describe
+    depth = 1
+    while describe.blocks.last.is_a?(Describe)
+      describe = describe.blocks.last
+      depth += 1
+    end
+    depth
   end
 
-  def push_describe(text)
-    result = auto_indent("describe \"#{text}\" do")
-
-    @level += 1
-    @separate = false
-
-    result
+  def current_describe
+    describe = @describe
+    while describe.blocks.last.is_a?(Describe)
+      describe = describe.blocks.last
+    end
+    describe
   end
 
-  def pop_describe
-    @level -= 1
-    @separate = true
-
-    auto_indent("end")
+  def describe_at_level(level)
+    describe = @describe
+    2.upto(level) do
+      describe = describe.blocks.last
+    end
+    describe
   end
 
   def generate_test_code
