@@ -45,6 +45,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :arg,                       # One argument
     :args,                      # All arguments
     :begin,                     # A simple sequence
+    :block,                     # A closure, not just any scope
     :const,         # FIXME a constant could be defined to be nil
     :def,                       # Method definition
     :lvar,                      # Local variable value
@@ -102,6 +103,10 @@ class ZombieKillerRewriter < Parser::Rewriter
         replace_node node, Parser::AST::Node.new(:send, [a, new_op, b])
       end
     end
+  end
+
+  def on_block(node)
+    raise TooComplexToTranslateError
   end
 
   def on_while(node)

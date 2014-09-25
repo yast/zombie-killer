@@ -312,8 +312,9 @@ FIXME actually we should whitelist the nodes we know to be safe!
 
 Translating that properly requires data flow analysis which we do not do yet.
 
-Zombie Killer does not translate anything in a `def` that contains
-Too Complex Code.
+### While
+
+Zombie Killer does not translate anything in a `def` that contains a `while`.
 
 **Unchanged**
 
@@ -327,8 +328,7 @@ def d
 end
 ```
 
-Zombie killer does not translate anything in the outer scope that contains
-Too Complex Code.
+Zombie Killer does not translate anything in the outer scope that contains a `while`.
 
 **Unchanged**
 
@@ -336,6 +336,25 @@ Too Complex Code.
 v = "A"
 while cond
   w = Ops.add(v, "A")
+  v = uglify
+end
+```
+
+### Block
+
+Inside and after a block the data flow is more complex than we handle now.
+Up to the beginning of the block we could do it but currently we don't.
+
+Zombie Killer does not translate anything that contains a block.
+
+**Unchanged**
+
+```ruby
+v = 1
+v = Ops.add(v, 1)
+
+2.times do
+  v = Ops.add(v, 1)
   v = uglify
 end
 ```
