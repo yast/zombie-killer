@@ -11,8 +11,8 @@ module Code
       lines.map { |l| "#{l}\n" }.join("")
     end
 
-    def indent(s, n)
-      s.gsub(/^(?=.)/, " " * (INDENT_STEP * n))
+    def indent(s)
+      s.gsub(/^(?=.)/, " " * INDENT_STEP)
     end
   end
 end
@@ -28,7 +28,7 @@ class It
   def render
     [
       "#{@skip ? "xit" : "it"} #{@description.inspect} do",
-      Code.indent(@code, 1),
+      Code.indent(@code),
       "end"
     ].join("\n")
   end
@@ -47,7 +47,7 @@ class Describe
     parts = []
     parts << "describe #{@description.inspect} do"
     if !blocks.empty?
-      parts << Code.indent(@blocks.map(&:render).join("\n\n"), 1)
+      parts << Code.indent(@blocks.map(&:render).join("\n\n"))
     end
     parts << "end"
     parts.join("\n")
@@ -158,11 +158,11 @@ class RSpecRenderer < Redcarpet::Render::Base
   def generate_test_code
     [
       "original_code = cleanup(<" + "<-EOT)",     # splitting un-confuses Emacs
-      Code.indent(@original_code, 1),
+      Code.indent(@original_code),
       "EOT",
       "",
       "translated_code = cleanup(<" + "<-EOT)",   # splitting un-confuses Emacs
-      Code.indent(@translated_code, 1),
+      Code.indent(@translated_code),
       "EOT",
       "",
       "expect(ZombieKiller.new.kill(original_code)).to eq(translated_code)"
