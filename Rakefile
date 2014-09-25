@@ -1,4 +1,3 @@
-# -*- ruby -*-
 require "rspec/core/rake_task"
 
 require_relative "spec/rspec_renderer"
