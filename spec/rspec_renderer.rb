@@ -15,6 +15,23 @@ module Code
   end
 end
 
+# Represents RSpec's "it" block.
+class It
+  def initialize(attrs)
+    @description = attrs[:description]
+    @code        = attrs[:code]
+    @skip        = attrs[:skip]
+  end
+
+  def render
+    [
+      "#{@skip ? "xit" : "it"} #{@description.inspect} do",
+      Code.indent(@code, 1),
+      "end"
+    ].join("\n")
+  end
+end
+
 class RSpecRenderer < Redcarpet::Render::Base
   def initialize
     super
@@ -63,27 +80,19 @@ class RSpecRenderer < Redcarpet::Render::Base
     @next_block_type = :unknown
 
     if @original_code && @translated_code
-      lines = []
+      it = It.new(
+        description: @description,
+        code:        generate_test_code,
+        skip:        @description =~ /XFAIL/
+      )
 
-      it = @description =~ /XFAIL/ ? "xit" : "it"
-      lines << "" if @separate
-      lines << "#{it} \"#{@description}\" do"
-      lines << "  original_code = cleanup(<" + "<-EOT)"     # splitting un-confuses Emacs
-      lines << Code.indent(@original_code, 2)
-      lines << "  EOT"
-      lines << ""
-      lines << "  translated_code = cleanup(<" + "<-EOT)"   # splitting un-confuses Emacs
-      lines << Code.indent(@translated_code, 2)
-      lines << "  EOT"
-      lines << ""
-      lines << "  expect(ZombieKiller.new.kill(original_code)).to eq(translated_code)"
-      lines << "end"
+      result = auto_indent((@separate ? "\n" : "") + it.render + "\n")
 
       @original_code   = nil
       @translated_code = nil
       @separate        = true
 
-      auto_indent(Code.join(lines))
+      result
     else
       nil
     end
@@ -128,5 +137,19 @@ class RSpecRenderer < Redcarpet::Render::Base
     @separate = true
 
     auto_indent("end")
+  end
+
+  def generate_test_code
+    [
+      "original_code = cleanup(<" + "<-EOT)",     # splitting un-confuses Emacs
+      Code.indent(@original_code, 1),
+      "EOT",
+      "",
+      "translated_code = cleanup(<" + "<-EOT)",   # splitting un-confuses Emacs
+      Code.indent(@translated_code, 1),
+      "EOT",
+      "",
+      "expect(ZombieKiller.new.kill(original_code)).to eq(translated_code)"
+    ].join("\n")
   end
 end
