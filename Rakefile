@@ -6,9 +6,8 @@ require_relative "spec/rspec_renderer"
 def render_markdown(renderer_class, task)
   markdown = Redcarpet::Markdown.new(renderer_class, fenced_code_blocks: true)
 
-  File.open(task.name, "w") do |f|
-    f.write(markdown.render(File.read(task.prerequisites[0])))
-  end
+  string = markdown.render(File.read(task.prerequisites[0]))
+  File.write(task.name, string)
 end
 
 file "spec/zombie_killer_spec.rb" => "spec/zombie_killer_spec.md" do |t|

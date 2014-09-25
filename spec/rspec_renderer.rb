@@ -96,7 +96,7 @@ class RSpecRenderer < Redcarpet::Render::Base
       when :unchanged
         @original_code = @translated_code = code[0..-2]
       else
-        raise "Invalid next code block type: #@next_block_type."
+        raise "Invalid next code block type: #@next_block_type.\n#{code}"
     end
     @next_block_type = :unknown
 
