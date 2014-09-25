@@ -8,8 +8,36 @@ specification. Technically, this is implemented by translating this document
 from [Markdown](http://daringfireball.net/projects/markdown/) into
 [RSpec](http://rspec.info/).
 
+Table Of Contents
+-----------------
+
+1. Concepts
+1. Literals
+1. Variables
+1. Calls Preserving Niceness
+1. Formatting
+1. Too Complex Code
+
+Concepts
+--------
+
+A **zombie** is a Ruby method call emulating a quirk of the YCP language that
+YaST was formerly implemented in.  `Ops.add` will serve as an example of a
+simple zombie. The library implementation simply returns `nil` if any argument
+is `nil`. Compare this to `+` which raises an exception if it gets
+`nil`. Therefore `Ops.add` can be translated to the `+` operator, as long as
+its arguments are not `nil`.
+
+A **nice** value is one that cannot be `nil` and is therefore suitable as an
+argument to a native operator.
+
+An **ugly** value is one that may be `nil`.
+
 Literals
 --------
+
+String and integer literals are obviously nice. `nil` is a literal too but it
+is ugly.
 
 Zombie Killer translates `Ops.add` of two string literals.
 
@@ -23,20 +51,6 @@ Ops.add("Hello", "World")
 
 ```ruby
 "Hello" + "World"
-```
-
-Zombie Killer translates assignment of `Ops.add` of two string literals.
-
-**Original**
-
-```ruby
-v = Ops.add("Hello", "World")
-```
-
-**Translated**
-
-```ruby
-v = "Hello" + "World"
 ```
 
 Zombie Killer translates `Ops.add` of two integer literals.
@@ -53,12 +67,35 @@ Ops.add(40, 2)
 40 + 2
 ```
 
+Zombie Killer translates assignment of `Ops.add` of two string literals.
+(Move this to "translate deeper than at top level")
+
+**Original**
+
+```ruby
+v = Ops.add("Hello", "World")
+```
+
+**Translated**
+
+```ruby
+v = "Hello" + "World"
+```
+
 Zombie Killer does not translate Ops.add if any argument is ugly.
 
 **Unchanged**
 
 ```ruby
 Ops.add("Hello", world)
+```
+
+Zombie Killer does not translate Ops.add if any argument is the nil literal.
+
+**Unchanged**
+
+```ruby
+Ops.add("Hello", nil)
 ```
 
 Literal Variables
