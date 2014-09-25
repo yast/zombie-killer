@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
   spec.require_path = "lib"
 
   # dependencies
+  spec.add_dependency "docopt"
   spec.add_dependency "parser"
   spec.add_dependency "unparser"
 
