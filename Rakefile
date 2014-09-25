@@ -1,14 +1,25 @@
 require "rspec/core/rake_task"
 
+require "redcarpet"
 require_relative "spec/rspec_renderer"
 
-file "spec/zombie_killer_spec.rb" => "spec/zombie_killer_spec.md" do |t|
-  markdown = Redcarpet::Markdown.new(RSpecRenderer, fenced_code_blocks: true)
+def render_markdown(renderer_class, task)
+  markdown = Redcarpet::Markdown.new(renderer_class, fenced_code_blocks: true)
 
-  File.open(t.name, "w") do |f|
-    f.write(markdown.render(File.read(t.prerequisites[0])))
+  File.open(task.name, "w") do |f|
+    f.write(markdown.render(File.read(task.prerequisites[0])))
   end
 end
+
+file "spec/zombie_killer_spec.rb" => "spec/zombie_killer_spec.md" do |t|
+  render_markdown(RSpecRenderer, t)
+end
+
+file "spec/zombie_killer_spec.html" => "spec/zombie_killer_spec.md" do |t|
+  render_markdown(Redcarpet::Render::HTML, t)
+end
+desc "Render the specification locally"
+task :html => ["spec/zombie_killer_spec.html"]
 
 RSpec::Core::RakeTask.new do |t|
   t.verbose = false
