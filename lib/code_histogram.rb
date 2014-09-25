@@ -12,9 +12,12 @@ class CodeHistogram
   end
 
   def print_by_frequency(io)
-    count_to_method = @counts.invert
-    count_to_method.keys.sort.each do |c|
-      io.printf("%4d %s\n", c, count_to_method[c])
+    count_to_methods = invert_hash_preserving_duplicates(@counts)
+
+    count_to_methods.keys.sort.each do |c|
+      count_to_methods[c].sort.each do |method|
+        io.printf("%4d %s\n", c, method)
+      end
     end
   end
 
@@ -32,5 +35,16 @@ class CodeHistogram
     counts.merge!(other.counts) do |key, count, other_count|
       count + other_count
     end
+  end
+
+  private
+
+  def invert_hash_preserving_duplicates(h)
+    ih = {}
+    h.each do |k, v|
+      ih[v] = [] unless ih.has_key?(v)
+      ih[v] << k
+    end
+    ih
   end
 end
