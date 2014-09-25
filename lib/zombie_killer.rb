@@ -51,9 +51,10 @@ class TooComplexToTranslateError < Exception
 end
 
 class ZombieKillerRewriter < Parser::Rewriter
-  def initialize
+  def initialize(unsafe: false)
     outer_scope = VariableScope.new
     @scopes = [outer_scope]
+    @unsafe = unsafe
   end
 
   def rewrite(buffer, ast)
@@ -61,6 +62,33 @@ class ZombieKillerRewriter < Parser::Rewriter
   rescue TooComplexToTranslateError
     puts "Outer scope is too complex to translate, sorry"
     buffer.source
+  end
+
+  # Literals are nice, except the nil literal.
+  NICE_LITERAL_NODE_TYPES = [:false, :int, :self, :str, :sym, :true].to_set
+
+  # FIXME
+  # How can we ensure that code modifications do not make some unhandled again?
+  HANDLED_NODE_TYPES = [
+    :arg,                       # One argument
+    :args,                      # All arguments
+    :begin,                     # A simple sequence
+    :const,         # FIXME a constant could be defined to be nil
+    :def,                       # Method definition
+    :lvar,                      # Local variable value
+    :lvasgn,                    # Local variable assignment
+    :nil,                       # nil literal
+    :send,                      # Send a message AKA Call a method
+    :while                      # TooComplexToTranslateError
+  ].to_set + NICE_LITERAL_NODE_TYPES
+
+  def process(node)
+    return if node.nil?
+    if ! @unsafe
+      oops(node, RuntimeError.new("Unknown node type #{node.type}")) unless
+        HANDLED_NODE_TYPES.include? node.type
+    end
+    super
   end
 
   # currently visible scope
@@ -129,9 +157,6 @@ class ZombieKillerRewriter < Parser::Rewriter
       nice_begin(node)
   end
 
-  # Literals are nice, except the nil literal.
-  NICE_LITERAL_NODE_TYPES = [:false, :int, :self, :str, :sym, :true].to_set
-
   def nice_literal(node)
     NICE_LITERAL_NODE_TYPES.include? node.type
   end
@@ -183,10 +208,10 @@ end
 
 class ZombieKiller
   # @returns new string
-  def kill_string(code, filename = "(inline code)")
+  def kill_string(code, filename = "(inline code)", unsafe: false)
     fixed_point(code) do |code|
       parser   = Parser::CurrentRuby.new
-      rewriter = ZombieKillerRewriter.new
+      rewriter = ZombieKillerRewriter.new(unsafe: unsafe)
       buffer   = Parser::Source::Buffer.new(filename)
       buffer.source = code
       rewriter.rewrite(buffer, parser.parse(buffer))
@@ -195,8 +220,8 @@ class ZombieKiller
   alias_method :kill, :kill_string
 
   # @param new_filename may be the same as *filename*
-  def kill_file(filename, new_filename)
-    new_string = kill_string(File.read(filename), filename)
+  def kill_file(filename, new_filename, unsafe: false)
+    new_string = kill_string(File.read(filename), filename, unsafe: unsafe)
 
     File.write(new_filename, new_string)
   end

@@ -10,6 +10,7 @@ Zombie Killer -- tool to kill YCP zombies
 Usage: zk [options] <files>...
 
 Options:
+  -u, --unsafe               Translate even constructs not known to be safe.
   -s, --stats                Also print statistics about node types.
   -h, --help                 Print help and exit.
 EOT
@@ -19,7 +20,7 @@ begin
 
   killer = ZombieKiller.new
   options["<files>"].each do |file|
-    killer.kill_file(file, file)
+    killer.kill_file(file, file, unsafe: options["--unsafe"])
 
     if options["--stats"]
       counter = NodeTypeCounter.new(file)
