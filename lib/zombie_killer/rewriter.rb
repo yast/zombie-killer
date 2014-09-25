@@ -46,7 +46,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :args,                      # All arguments
     :begin,                     # A simple sequence
     :block,                     # A closure, not just any scope
-    :const,         # FIXME a constant could be defined to be nil
+    :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
