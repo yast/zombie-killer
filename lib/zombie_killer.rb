@@ -1,5 +1,6 @@
 require "parser"
 require "parser/current"
+require "set"
 require "unparser"
 
 require_relative "version"
@@ -101,8 +102,11 @@ class ZombieKillerRewriter < Parser::Rewriter
       nice_begin(node)
   end
 
+  # Literals are nice, except the nil literal.
+  NICE_LITERAL_NODE_TYPES = [:false, :int, :self, :str, :sym, :true].to_set
+
   def nice_literal(node)
-    node.type == :str || node.type == :int
+    NICE_LITERAL_NODE_TYPES.include? node.type
   end
 
   def nice_variable(node)
