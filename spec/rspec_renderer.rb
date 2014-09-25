@@ -1,8 +1,21 @@
 require "redcarpet"
 
-class RSpecRenderer < Redcarpet::Render::Base
+# Utility functions for manipulating code.
+module Code
   INDENT_STEP = 2
 
+  class << self
+    def join(lines)
+      lines.map { |l| "#{l}\n" }.join("")
+    end
+
+    def indent(s, n)
+      s.gsub(/^(?=.)/, " " * (INDENT_STEP * n))
+    end
+  end
+end
+
+class RSpecRenderer < Redcarpet::Render::Base
   def initialize
     super
 
@@ -23,7 +36,7 @@ class RSpecRenderer < Redcarpet::Render::Base
     lines << "" if @separate
     lines << push_describe(text.downcase)
 
-    join(lines)
+    Code.join(lines)
   end
 
   def paragraph(text)
@@ -56,11 +69,11 @@ class RSpecRenderer < Redcarpet::Render::Base
       lines << "" if @separate
       lines << "#{it} \"#{@description}\" do"
       lines << "  original_code = cleanup(<" + "<-EOT)"     # splitting un-confuses Emacs
-      lines << indent(@original_code, 2)
+      lines << Code.indent(@original_code, 2)
       lines << "  EOT"
       lines << ""
       lines << "  translated_code = cleanup(<" + "<-EOT)"   # splitting un-confuses Emacs
-      lines << indent(@translated_code, 2)
+      lines << Code.indent(@translated_code, 2)
       lines << "  EOT"
       lines << ""
       lines << "  expect(ZombieKiller.new.kill(original_code)).to eq(translated_code)"
@@ -70,14 +83,14 @@ class RSpecRenderer < Redcarpet::Render::Base
       @translated_code = nil
       @separate        = true
 
-      auto_indent(join(lines))
+      auto_indent(Code.join(lines))
     else
       nil
     end
   end
 
   def doc_header
-    join([
+    Code.join([
       "# Generated from spec/zombie_killer_spec.md -- do not change!",
       "",
       "require \"spec_helper\"",
@@ -92,21 +105,13 @@ class RSpecRenderer < Redcarpet::Render::Base
     lines << pop_describe while @level > 0
     lines << "end"
 
-    join(lines)
+    Code.join(lines)
   end
 
   private
 
-  def join(lines)
-    lines.map { |l| "#{l}\n" }.join("")
-  end
-
-  def indent(s, n)
-    s.gsub(/^(?=.)/, " " * (INDENT_STEP * n))
-  end
-
   def auto_indent(s)
-    indent(s, @level + 1)
+    Code.indent(s, @level + 1)
   end
 
   def push_describe(text)
