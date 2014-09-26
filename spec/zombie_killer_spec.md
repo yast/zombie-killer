@@ -19,8 +19,9 @@ Table Of Contents
 1. Translation Below Top Level
 1. Chained Translation
 1. If
-1. Too Complex Code
+1. Loops
     1. While
+1. Too Complex Code
     1. Block
 1. Formatting
 
@@ -437,41 +438,58 @@ v = 1
 v + 1
 ```
 
-Too Complex Code
-----------------
-
-Too Complex Code is one that contains `rescue`, `ensure`,
-`block`, `while`, while-post...
-
-Translating that properly requires data flow analysis which we do not do yet.
+Loops
+-----
 
 ### While
 
-Zombie Killer does not translate anything in a `def` that contains a `while`.
+`while` is a loop which means assignments later in its body can affects values
+earlier in its body. Therefore we cannot process the body and we must clear
+the state afterwards.
 
-**Unchanged**
-
-```ruby
-def d
-  v = "A"
-  while cond
-    w = Ops.add(v, "A")
-    v = uglify
-  end
-end
-```
 
 Zombie Killer does not translate anything in the outer scope that contains a `while`.
 
 **Unchanged**
 
 ```ruby
-v = "A"
+v = 1
 while cond
-  w = Ops.add(v, "A")
-  v = uglify
+  Ops.add(1, 1)
 end
+Ops.add(v, 1)
 ```
+
+We can continue processing after a `while`. Pun!
+
+**Original**
+
+```ruby
+while cond
+  foo
+end
+v = 1
+Ops.add(v, 1)
+```
+
+**Translated**
+
+```ruby
+while cond
+  foo
+end
+v = 1
+v + 1
+```
+
+Too Complex Code
+----------------
+
+Too Complex Code is one that contains `rescue`, `ensure`,
+`block`, while-post...
+
+Translating that properly requires data flow analysis which we do not do yet.
+
 
 ### Block
 

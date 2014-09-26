@@ -127,7 +127,13 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def on_while(node)
-    raise TooComplexToTranslateError
+    cond, _body = *node
+    process(cond)
+
+    # ignore _body, with a simplistic scope we cannot handle it
+
+    # clean slate
+    scope.clear
   end
 
   private
