@@ -303,62 +303,8 @@ Ops.add(
 )
 ```
 
-Too Complex Code
-----------------
-
-Too Complex Code is one that contains `rescue`, `ensure`,
-`block`, `while`, while-post...
-
-Translating that properly requires data flow analysis which we do not do yet.
-
-### While
-
-Zombie Killer does not translate anything in a `def` that contains a `while`.
-
-**Unchanged**
-
-```ruby
-def d
-  v = "A"
-  while cond
-    w = Ops.add(v, "A")
-    v = uglify
-  end
-end
-```
-
-Zombie Killer does not translate anything in the outer scope that contains a `while`.
-
-**Unchanged**
-
-```ruby
-v = "A"
-while cond
-  w = Ops.add(v, "A")
-  v = uglify
-end
-```
-
-### Block
-
-Inside and after a block the data flow is more complex than we handle now.
-Up to the beginning of the block we could do it but currently we don't.
-
-Zombie Killer does not translate anything that contains a block.
-
-**Unchanged**
-
-```ruby
-v = 1
-v = Ops.add(v, 1)
-
-2.times do
-  v = Ops.add(v, 1)
-  v = uglify
-end
-```
-
-### If
+If
+--
 
 With a **single-pass top-down data flow analysis**, that we have been using,
 we can process the `if` statement but not beyond it,
@@ -433,7 +379,7 @@ if cond(v = 1)
 end
 ```
 
-#### A variable is not nice after its niceness was invalidated by an `if`
+### A variable is not nice after its niceness was invalidated by an `if`
 
 Plain `if`
 
@@ -479,7 +425,7 @@ v = nil unless cond
 Ops.add(v, 1)
 ```
 
-#### Resuming with a clean slate after an `if`
+### Resuming with a clean slate after an `if`
 
 It translates zombies whose arguments were found nice after an `if`.
 
@@ -501,6 +447,61 @@ if cond
 end
 v = 1
 v + 1
+```
+
+Too Complex Code
+----------------
+
+Too Complex Code is one that contains `rescue`, `ensure`,
+`block`, `while`, while-post...
+
+Translating that properly requires data flow analysis which we do not do yet.
+
+### While
+
+Zombie Killer does not translate anything in a `def` that contains a `while`.
+
+**Unchanged**
+
+```ruby
+def d
+  v = "A"
+  while cond
+    w = Ops.add(v, "A")
+    v = uglify
+  end
+end
+```
+
+Zombie Killer does not translate anything in the outer scope that contains a `while`.
+
+**Unchanged**
+
+```ruby
+v = "A"
+while cond
+  w = Ops.add(v, "A")
+  v = uglify
+end
+```
+
+### Block
+
+Inside and after a block the data flow is more complex than we handle now.
+Up to the beginning of the block we could do it but currently we don't.
+
+Zombie Killer does not translate anything that contains a block.
+
+**Unchanged**
+
+```ruby
+v = 1
+v = Ops.add(v, 1)
+
+2.times do
+  v = Ops.add(v, 1)
+  v = uglify
+end
 ```
 
 Templates
