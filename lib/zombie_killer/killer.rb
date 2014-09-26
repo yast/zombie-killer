@@ -6,11 +6,11 @@ require_relative "rewriter"
 class ZombieKiller
   # @returns new string
   def kill_string(code, filename = "(inline code)", unsafe: false)
-    fixed_point(code) do |code|
+    fixed_point(code) do |c|
       parser   = Parser::CurrentRuby.new
       rewriter = ZombieKillerRewriter.new(unsafe: unsafe)
       buffer   = Parser::Source::Buffer.new(filename)
-      buffer.source = code
+      buffer.source = c
       rewriter.rewrite(buffer, parser.parse(buffer))
     end
   end

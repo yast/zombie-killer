@@ -115,7 +115,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     if is_call(node, :Ops, :add)
       new_op = :+
 
-      ops, add, a, b = *node
+      _ops, _add, a, b = *node
       if nice(a) && nice(b)
         replace_node node, Parser::AST::Node.new(:send, [a, new_op, b])
       end
@@ -196,6 +196,6 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def contains_comment?(string)
-    ret = /^[^'"\n]*#/.match(string)
+    /^[^'"\n]*#/.match(string)
   end
 end
