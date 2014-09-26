@@ -308,7 +308,6 @@ Too Complex Code
 
 Too Complex Code is one that contains `rescue`, `ensure`,
 `block`, `while`, while-post...
-FIXME actually we should whitelist the nodes we know to be safe!
 
 Translating that properly requires data flow analysis which we do not do yet.
 
@@ -357,4 +356,171 @@ v = Ops.add(v, 1)
   v = Ops.add(v, 1)
   v = uglify
 end
+```
+
+### If
+
+With a **single-pass top-down data flow analysis**, that we have been using,
+we can process the `if` statement but not beyond it,
+because we cannot know which branch was taken.
+
+We can proceed after the `if` statement but must **start with a clean slate**.
+More precisely we should remove knowledge of all variables affected in either
+branch of the `if` statement, but we will first simplify the job and wipe all
+state for the processed method.
+
+Zombie Killer translates the `then` body of an `if` statement.
+
+**Original**
+
+```ruby
+if cond
+  Ops.add(1, 1)
+end
+```
+
+**Translated**
+
+```ruby
+if cond
+  1 + 1
+end
+```
+
+It translates both branches of an `if` statement, independently of each other.
+
+**Original**
+
+```ruby
+v = 1
+if cond
+  Ops.add(v, 1)
+  v = nil
+else
+  Ops.add(1, v)
+  v = nil
+end
+```
+
+**Translated**
+
+```ruby
+v = 1
+if cond
+  v + 1
+  v = nil
+else
+  1 + v
+  v = nil
+end
+```
+
+The condition also contributes to the data state.
+
+**Original**
+
+```ruby
+if cond(v = 1)
+  Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+if cond(v = 1)
+  v + 1
+end
+```
+
+#### A variable is not nice after its niceness was invalidated by an `if`
+
+Plain `if`
+
+**Unchanged**
+
+```ruby
+v = 1
+if cond
+  v = nil
+end
+Ops.add(v, 1)
+```
+
+Trailing `if`.
+
+**Unchanged**
+
+```ruby
+v = 1
+v = nil if cond
+Ops.add(v, 1)
+```
+
+Plain `unless`.
+
+**Unchanged**
+
+```ruby
+v = 1
+unless cond
+  v = nil
+end
+Ops.add(v, 1)
+```
+
+Trailing `unless`.
+
+**Unchanged**
+
+```ruby
+v = 1
+v = nil unless cond
+Ops.add(v, 1)
+```
+
+#### Resuming with a clean slate after an `if`
+
+It translates zombies whose arguments were found nice after an `if`.
+
+**Original**
+
+```ruby
+if cond
+   v = nil
+end
+v = 1
+Ops.add(v, 1)
+```
+
+**Translated**
+
+```ruby
+if cond
+   v = nil
+end
+v = 1
+v + 1
+```
+
+Templates
+---------
+
+It translates.
+
+**Original**
+
+```ruby
+```
+
+**Translated**
+
+```ruby
+```
+
+It does not translate.
+
+**Unchanged**
+
+```ruby
 ```

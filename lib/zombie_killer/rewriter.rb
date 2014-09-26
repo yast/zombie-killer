@@ -48,10 +48,12 @@ class ZombieKillerRewriter < Parser::Rewriter
     :block,                     # A closure, not just any scope
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
+    :if,                        # If
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
     :nil,                       # nil literal
     :send,                      # Send a message AKA Call a method
+    :unless,                    # Unless AKA If-Not
     :while                      # TooComplexToTranslateError
   ].to_set + NICE_LITERAL_NODE_TYPES
 
@@ -81,8 +83,19 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def on_if(node)
-    # FIXME need separate scopes for the branches
-    super
+    cond, then_body, else_body = *node
+    process(cond)
+
+    @scopes.push scope.dup
+    process(then_body)
+    @scopes.pop
+
+    @scopes.push scope.dup
+    process(else_body)
+    @scopes.pop
+
+    # clean slate
+    scope.clear
   end
 
   # local(?) variable assignment
