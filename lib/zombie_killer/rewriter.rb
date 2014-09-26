@@ -29,10 +29,14 @@ class ZombieKillerRewriter < Parser::Rewriter
     @unsafe = unsafe
   end
 
+  def warning(message)
+    $stderr.puts message if $VERBOSE
+  end
+
   def rewrite(buffer, ast)
     super
   rescue TooComplexToTranslateError
-    puts "Outer scope is too complex to translate, sorry"
+    warning "(outer scope) is too complex to translate"
     buffer.source
   end
 
@@ -77,7 +81,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.pop
   rescue TooComplexToTranslateError
     name = node.children.first
-    puts "def #{name} is too complex to translate, sorry"
+    warning "def #{name} is too complex to translate"
   rescue => e
     oops(node, e)
   end
