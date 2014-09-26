@@ -18,8 +18,11 @@ Table Of Contents
     1. Calls Generating Niceness
 1. Translation Below Top Level
 1. Chained Translation
-1. Formatting
+1. If
 1. Too Complex Code
+    1. While
+    1. Block
+1. Formatting
 
 Concepts
 --------
@@ -288,21 +291,6 @@ Ops.add("Hello", " " + "World")
 "Hello" + (" " + "World")
 ```
 
-Formatting
-----------
-
-Zombie Killer does not translate `Ops.add` if any argument has a comment.
-
-**Unchanged**
-
-```ruby
-Ops.add(
-  "Hello",
-  # foo
-  "World"
-)
-```
-
 If
 --
 
@@ -502,6 +490,21 @@ v = Ops.add(v, 1)
   v = Ops.add(v, 1)
   v = uglify
 end
+```
+
+Formatting
+----------
+
+Zombie Killer does not translate `Ops.add` if any argument has a comment.
+
+**Unchanged**
+
+```ruby
+Ops.add(
+  "Hello",
+  # foo
+  "World"
+)
 ```
 
 Templates
