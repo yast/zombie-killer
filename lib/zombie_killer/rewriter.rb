@@ -127,10 +127,8 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def on_while(node)
-    cond, _body = *node
-    process(cond)
-
-    # ignore _body, with a simplistic scope we cannot handle it
+    # ignore both condition and body,
+    # with a simplistic scope we cannot handle them
 
     # clean slate
     scope.clear

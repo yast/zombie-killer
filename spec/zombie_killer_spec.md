@@ -444,9 +444,8 @@ Loops
 ### While
 
 `while` is a loop which means assignments later in its body can affects values
-earlier in its body. Therefore we cannot process the body and we must clear
-the state afterwards.
-
+earlier in its body and in the condition. Therefore we cannot process either
+one and we must clear the state afterwards.
 
 Zombie Killer does not translate anything in the outer scope that contains a `while`.
 
@@ -454,7 +453,7 @@ Zombie Killer does not translate anything in the outer scope that contains a `wh
 
 ```ruby
 v = 1
-while cond
+while Ops.add(v, 1)
   Ops.add(1, 1)
 end
 Ops.add(v, 1)
