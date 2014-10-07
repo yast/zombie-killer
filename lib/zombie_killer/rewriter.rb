@@ -41,21 +41,35 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   # Literals are nice, except the nil literal.
-  NICE_LITERAL_NODE_TYPES = [:false, :int, :self, :str, :sym, :true].to_set
+  NICE_LITERAL_NODE_TYPES = [
+    :self,
+    :false, :true,
+    :int, :float,
+    :str, :sym,
+    :array, :hash, :pair        # may contain nils but they are not nil
+  ].to_set
 
   # FIXME
   # How can we ensure that code modifications do not make some unhandled again?
   HANDLED_NODE_TYPES = [
+    :and,                       # &&
     :arg,                       # One argument
     :args,                      # All arguments
     :begin,                     # A simple sequence
     :block,                     # A closure, not just any scope
+    :casgn,                     # Constant assignment/definition
+    :class,                     # Class body
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
     :if,                        # If
+    :ivar,                      # Instance variable value
+    :ivasgn,                    # Instance variable assignment
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
+    :module,                    # Module body
     :nil,                       # nil literal
+    :or,                        # ||
+    :return,                    # Method return
     :send,                      # Send a message AKA Call a method
     :unless,                    # Unless AKA If-Not
     :while                      # TooComplexToTranslateError
