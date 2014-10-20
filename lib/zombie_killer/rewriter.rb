@@ -194,9 +194,19 @@ class ZombieKillerRewriter < Parser::Rewriter
   # Exceptions:
   # `raise` is an ordinary :send for the parser
 
+  def on_rescue(node)
+    # (:rescue, begin-block, resbody..., else-block-or-nil)
+    begin_body, *rescue_bodies, else_body = *node
+
+    process(begin_body)
+    process(else_body)
+    rescue_bodies.each do |r|
+      process(r)
+    end
+  end
+
   def on_resbody(node)
     # How it is parsed:
-    # (:rescue, begin-block, resbody... [, else-block])
     # (:resbody, exception-types-or-nil, exception-variable-or-nil, body)
     # exception-types is an :array
     # exception-variable is a (:lvasgn, name), without a value
@@ -206,6 +216,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     # and join begin-block with else-block, but it is little worth
     # because they will contain few zombies.
     scope.clear
+    super
   end
 
   def on_ensure(node)

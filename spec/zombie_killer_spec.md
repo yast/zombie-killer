@@ -561,6 +561,42 @@ that all remaining code in a `def` is skipped. It is a problem at the `rescue`
 or `ensure` site where it means that *some* of the preceding code was not
 executed.
 
+Zombie Killer translates the parts, joining else, rescue separately.
+
+**Original**
+
+```ruby
+def foo
+  v = 1
+  Ops.add(v, 1)
+rescue
+  w = 1
+  Ops.add(w, 1)
+  v = nil
+rescue
+  Ops.add(w, 1)
+else
+  Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+def foo
+  v = 1
+  v + 1
+rescue
+  w = 1
+  w + 1
+  v = nil
+rescue
+  Ops.add(w, 1)
+else
+  v + 1
+end
+```
+
 ### Skipping Code
 
 Zombie Killer does not translate code that depends on niceness skipped
@@ -575,9 +611,6 @@ def a_problem
   v = 1
 rescue
   puts "Oops", Ops.add(v, 1)
-  v = 1
-else
-  puts "This is also skipped",  Ops.add(v, 1)
 end
 ```
 
@@ -603,6 +636,7 @@ rescue
 ensure
   foo
 end
+yast rescue nil
 ```
 
 Blocks
