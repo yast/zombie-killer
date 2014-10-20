@@ -63,6 +63,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :block,                     # A closure, not just any scope
     :block_pass,                # Pass &foo as an arg which is a block, &:foo
     :blockarg,                  # An argument initialized with a block def m(&b)
+    :case,                      # Case statement
     :casgn,                     # Constant assignment/definition
     :cbase,                     # Base/root of constant tree, ::Foo
     :class,                     # Class body
@@ -101,6 +102,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :unless,                    # Unless AKA If-Not
     :until,                     # Until AKA While-Not
     :until_post,                # Until with post-condtion
+    :when,                      # When branch of an Case statement
     :while,                     # While loop
     :while_post,                # While loop with post-condition
     :xstr,                      # Executed `string`, backticks
@@ -156,6 +158,20 @@ class ZombieKillerRewriter < Parser::Rewriter
     # Compare with `while` and `until` which cannot do that and thus need
     # distinct node types.
   # end
+
+  def on_case(node)
+    expr, *cases = *node
+    process(expr)
+
+    cases.each do |case_|
+      @scopes.push scope.dup
+      process(case_)
+      @scopes.pop
+    end
+
+    # clean slate
+    scope.clear
+  end
 
   # local(?) variable assignment
   def on_vasgn(node)

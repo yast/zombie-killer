@@ -19,6 +19,7 @@ Table Of Contents
 1. Translation Below Top Level
 1. Chained Translation
 1. If
+1. Case
 1. Loops
     1. While and Until
 1. Exceptions
@@ -451,6 +452,153 @@ Ops.add(v, 1)
 ```ruby
 if cond
    v = nil
+end
+v = 1
+v + 1
+```
+
+Case
+----
+
+With a **single-pass top-down data flow analysis**, that we have been using,
+we can process the `case` statement but not beyond it,
+because we cannot know which branch was taken.
+
+We can proceed after the `case` statement but must **start with a clean slate**.
+More precisely we should remove knowledge of all variables affected in either
+branch of the `case` statement, but we will first simplify the job and wipe all
+state for the processed method.
+
+Zombie Killer translates the `when` body of a `case` statement.
+
+**Original**
+
+```ruby
+case expr
+  when 1
+    Ops.add(1, 1)
+end
+```
+
+**Translated**
+
+```ruby
+case expr
+  when 1
+    1 + 1
+end
+```
+
+It translates all branches of a `case` statement, independently of each other.
+
+**Original**
+
+```ruby
+v = 1
+case expr
+  when 1
+    Ops.add(v, 1)
+    v = nil
+  when 2
+    Ops.add(v, 2)
+    v = nil
+  else
+    Ops.add(1, v)
+    v = nil
+end
+```
+
+**Translated**
+
+```ruby
+v = 1
+case expr
+  when 1
+    v + 1
+    v = nil
+  when 2
+    v + 2
+    v = nil
+  else
+    1 + v
+    v = nil
+end
+```
+
+The expression also contributes to the data state.
+
+**Original**
+
+```ruby
+case v = 1
+  when 1
+    Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+case v = 1
+  when 1
+    v + 1
+end
+```
+
+The test also contributes to the data state.
+
+**Original**
+
+```ruby
+case expr
+  when v = 1
+    Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+case expr
+  when v = 1
+    v + 1
+end
+```
+
+### A variable is not nice after its niceness was invalidated by a `case`
+
+**Unchanged**
+
+```ruby
+v = 1
+case expr
+  when 1
+    v = nil
+end
+Ops.add(v, 1)
+```
+
+### Resuming with a clean slate after a `case`
+
+It translates zombies whose arguments were found nice after a `case`.
+
+**Original**
+
+```ruby
+case expr
+  when 1
+    v = nil
+end
+v = 1
+Ops.add(v, 1)
+```
+
+**Translated**
+
+```ruby
+case expr
+  when 1
+    v = nil
 end
 v = 1
 v + 1
