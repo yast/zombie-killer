@@ -178,8 +178,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     scope.clear
   end
 
-  # local(?) variable assignment
-  def on_vasgn(node)
+  def on_lvasgn(node)
     super
     name, value = * node
     return if value.nil? # and-asgn, or-asgn, resbody do this

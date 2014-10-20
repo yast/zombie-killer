@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
 
   # dependencies
   spec.add_dependency "docopt"
-  spec.add_dependency "parser"
+  spec.add_dependency "parser", "2.2.0.pre.5"
   spec.add_dependency "unparser"
 
   spec.add_development_dependency "rspec"
