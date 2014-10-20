@@ -132,7 +132,14 @@ class ZombieKillerRewriter < Parser::Rewriter
   rescue => e
     oops(node, e)
   end
-  alias_method :on_defs, :on_def
+
+  def on_defs(node)
+    @scopes.push VariableScope.new
+    super
+    @scopes.pop
+  rescue => e
+    oops(node, e)
+  end
 
   def on_if(node)
     cond, then_body, else_body = *node

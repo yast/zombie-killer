@@ -173,6 +173,18 @@ def b(v)
 end
 ```
 
+Zombie Killer does not confuse variables across `def self.`s.
+
+**Unchanged**
+
+```ruby
+v = 1
+
+def self.foo(v)
+  Ops.add(v, 1)
+end
+```
+
 Calls Preserving Niceness
 -------------------------
 
