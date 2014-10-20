@@ -61,6 +61,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :class,                     # Class body
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
+    :dstr,                      # "String #{interpolation}" mixes :str, :begin
     :ensure,                    # Exception ensuring
     :if,                        # If and Unless
     :ivar,                      # Instance variable value
