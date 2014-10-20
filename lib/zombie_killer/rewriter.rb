@@ -69,6 +69,8 @@ class ZombieKillerRewriter < Parser::Rewriter
     :module,                    # Module body
     :nil,                       # nil literal
     :or,                        # ||
+    :resbody,                   # One rescue clause in a :rescue construct
+    :rescue,                    # Groups the begin and :resbody
     :return,                    # Method return
     :send,                      # Send a message AKA Call a method
     :unless,                    # Unless AKA If-Not
@@ -145,6 +147,17 @@ class ZombieKillerRewriter < Parser::Rewriter
     # with a simplistic scope we cannot handle them
 
     # clean slate
+    scope.clear
+  end
+
+  def on_resbody(node)
+    # How it is parsed:
+    # (:rescue, begin-block, resbody...)
+    # (:resbody, exception-types-or-nil, exception-variable-or-nil, body)
+    # exception-types is an :array
+    # exception-variable is a (:lvasgn, name), without a value
+
+    # A rescue means that *some* previous code was skipped. We know nothing.
     scope.clear
   end
 

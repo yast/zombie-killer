@@ -21,6 +21,7 @@ Table Of Contents
 1. If
 1. Loops
     1. While
+1. Exceptions
 1. Too Complex Code
     1. Block
 1. Formatting
@@ -447,7 +448,8 @@ Loops
 earlier in its body and in the condition. Therefore we cannot process either
 one and we must clear the state afterwards.
 
-Zombie Killer does not translate anything in the outer scope that contains a `while`.
+Zombie Killer does not translate anything in the outer scope
+that contains a `while`.
 
 **Unchanged**
 
@@ -479,6 +481,29 @@ while cond
 end
 v = 1
 v + 1
+```
+
+Exceptions
+----------
+
+Raising an exception is not a problem at the `raise` site. There it means
+that all remaining code in a `def` is skipped. It is a problem at the `rescue`
+or `ensure` site where it means that *some* of the preceding code was not
+executed.
+
+Zombie Killer does not translate code that depends on niceness skipped
+via an exception.
+
+**Unchanged**
+
+```ruby
+def a_problem
+  v = nil
+  w = 1 / 0
+  v = 1
+rescue
+  puts "Oops", Ops.add(v, 1)
+end
 ```
 
 Too Complex Code
