@@ -129,9 +129,6 @@ class ZombieKillerRewriter < Parser::Rewriter
     @scopes.push VariableScope.new
     super
     @scopes.pop
-  rescue TooComplexToTranslateError
-    name = node.children.first
-    warning "def #{name} is too complex to translate"
   rescue => e
     oops(node, e)
   end
