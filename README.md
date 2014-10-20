@@ -36,16 +36,8 @@ Issues
 ------
 
 Notice the `--unsafe` (or `-u`) option. Without it, Zombie Killer works well,
-on its test cases but fails on any real code. To run in the wild, be aware
-that there are still cases where Zombie Killer incorrectly kills a zombie
-where it is not correct, such as this one:
-
-```ruby
-def a_problem
-  v = nil
-  w = 1 / 0
-  v = 1
-rescue
-  puts "Oops", Ops.add(v, 1)
-end
-```
+on its test cases, but fails on longer real code.
+It is a cautionary measure
+to prevent incorrect translation of syntactic constructs
+that affect the control flow in ways
+that break our simplistic data flow analysis algorithm.
