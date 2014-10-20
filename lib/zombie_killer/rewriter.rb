@@ -76,7 +76,10 @@ class ZombieKillerRewriter < Parser::Rewriter
     :return,                    # Method return
     :send,                      # Send a message AKA Call a method
     :unless,                    # Unless AKA If-Not
-    :while                      # While loop
+    :until,                     # Until AKA While-Not
+    :until_post,                # Until with post-condtion
+    :while,                     # While loop
+    :while_post                 # While loop with post-condition
   ].to_set + NICE_LITERAL_NODE_TYPES
 
   def process(node)
@@ -150,6 +153,10 @@ class ZombieKillerRewriter < Parser::Rewriter
 
     # clean slate
     scope.clear
+  end
+
+  def on_until(node)
+    on_while node
   end
 
   # Exceptions:

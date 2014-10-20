@@ -20,7 +20,7 @@ Table Of Contents
 1. Chained Translation
 1. If
 1. Loops
-    1. While
+    1. While and Until
 1. Exceptions
 1. Too Complex Code
     1. Block
@@ -442,9 +442,10 @@ v + 1
 Loops
 -----
 
-### While
+### While and Until
 
-`while` is a loop which means assignments later in its body can affects values
+`while` and its negated twin `until` are loops
+which means assignments later in its body can affect values
 earlier in its body and in the condition. Therefore we cannot process either
 one and we must clear the state afterwards.
 
@@ -456,6 +457,19 @@ that contains a `while`.
 ```ruby
 v = 1
 while Ops.add(v, 1)
+  Ops.add(1, 1)
+end
+Ops.add(v, 1)
+```
+
+Zombie Killer does not translate anything in the outer scope
+that contains an `until`.
+
+**Unchanged**
+
+```ruby
+v = 1
+until Ops.add(v, 1)
   Ops.add(1, 1)
 end
 Ops.add(v, 1)
@@ -481,6 +495,45 @@ while cond
 end
 v = 1
 v + 1
+```
+
+Zombie Killer can continue processing after an `until`. No pun.
+
+**Original**
+
+```ruby
+until cond
+  foo
+end
+v = 1
+Ops.add(v, 1)
+```
+
+**Translated**
+
+```ruby
+until cond
+  foo
+end
+v = 1
+v + 1
+```
+
+Zombie Killer can parse both the syntactic and semantic post-condition.
+
+**Unchanged**
+
+```ruby
+body_runs_after_condition while cond
+body_runs_after_condition until cond
+
+begin
+  body_runs_before_condition
+end while cond
+
+begin
+  body_runs_before_condition
+end until cond
 ```
 
 Exceptions
@@ -535,8 +588,7 @@ end
 Too Complex Code
 ----------------
 
-Too Complex Code is one that contains `rescue`, `ensure`,
-`block`, while-post...
+Too Complex Code is one that contains a block.
 
 Translating that properly requires data flow analysis which we do not do yet.
 
