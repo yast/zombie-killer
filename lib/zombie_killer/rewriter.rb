@@ -61,9 +61,11 @@ class ZombieKillerRewriter < Parser::Rewriter
     :class,                     # Class body
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
+    :ensure,                    # Exception ensuring
     :if,                        # If
     :ivar,                      # Instance variable value
     :ivasgn,                    # Instance variable assignment
+    :kwbegin,                   # A variant of begin; for rescue and while_post
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
     :module,                    # Module body
@@ -74,7 +76,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :return,                    # Method return
     :send,                      # Send a message AKA Call a method
     :unless,                    # Unless AKA If-Not
-    :while                      # TooComplexToTranslateError
+    :while                      # While loop
   ].to_set + NICE_LITERAL_NODE_TYPES
 
   def process(node)
@@ -122,7 +124,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   def on_vasgn(node)
     super
     name, value = * node
-    return if value.nil? # and-asgn, or-asgn do this
+    return if value.nil? # and-asgn, or-asgn, resbody do this
     scope[name] = nice(value)
   end
 
@@ -150,6 +152,9 @@ class ZombieKillerRewriter < Parser::Rewriter
     scope.clear
   end
 
+  # Exceptions:
+  # `raise` is an ordinary :send for the parser
+
   def on_resbody(node)
     # How it is parsed:
     # (:rescue, begin-block, resbody...)
@@ -158,6 +163,13 @@ class ZombieKillerRewriter < Parser::Rewriter
     # exception-variable is a (:lvasgn, name), without a value
 
     # A rescue means that *some* previous code was skipped. We know nothing.
+    scope.clear
+  end
+
+  def on_ensure(node)
+    # (:ensure, guarded-code, ensuring-code)
+    # guarded-code may be a :rescue or not
+
     scope.clear
   end
 

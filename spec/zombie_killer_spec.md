@@ -461,7 +461,7 @@ end
 Ops.add(v, 1)
 ```
 
-We can continue processing after a `while`. Pun!
+Zombie Killer can continue processing after a `while`. Pun!
 
 **Original**
 
@@ -491,6 +491,8 @@ that all remaining code in a `def` is skipped. It is a problem at the `rescue`
 or `ensure` site where it means that *some* of the preceding code was not
 executed.
 
+### Skipping Code
+
 Zombie Killer does not translate code that depends on niceness skipped
 via an exception.
 
@@ -503,6 +505,30 @@ def a_problem
   v = 1
 rescue
   puts "Oops", Ops.add(v, 1)
+end
+```
+
+### Exception Syntax
+
+Zombie Killer can parse the syntactic variants of exception handling.
+
+**Unchanged**
+
+```ruby
+begin
+  foo
+  raise "LOL"
+  foo
+rescue Error
+  foo
+rescue Bug, Blunder => b
+  foo
+rescue => e
+  foo
+rescue
+  foo
+ensure
+  foo
 end
 ```
 
