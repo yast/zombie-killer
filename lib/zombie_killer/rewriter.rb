@@ -196,12 +196,15 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   def on_resbody(node)
     # How it is parsed:
-    # (:rescue, begin-block, resbody...)
+    # (:rescue, begin-block, resbody... [, else-block])
     # (:resbody, exception-types-or-nil, exception-variable-or-nil, body)
     # exception-types is an :array
     # exception-variable is a (:lvasgn, name), without a value
 
     # A rescue means that *some* previous code was skipped. We know nothing.
+    # We could process the resbodies individually,
+    # and join begin-block with else-block, but it is little worth
+    # because they will contain few zombies.
     scope.clear
   end
 

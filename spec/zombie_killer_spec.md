@@ -575,6 +575,9 @@ def a_problem
   v = 1
 rescue
   puts "Oops", Ops.add(v, 1)
+  v = 1
+else
+  puts "This is also skipped",  Ops.add(v, 1)
 end
 ```
 
