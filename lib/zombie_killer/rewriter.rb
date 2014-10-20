@@ -62,7 +62,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
     :ensure,                    # Exception ensuring
-    :if,                        # If
+    :if,                        # If and Unless
     :ivar,                      # Instance variable value
     :ivasgn,                    # Instance variable assignment
     :kwbegin,                   # A variant of begin; for rescue and while_post
@@ -122,6 +122,13 @@ class ZombieKillerRewriter < Parser::Rewriter
     # clean slate
     scope.clear
   end
+
+  # def on_unless
+    # Does not exist.
+    # `unless` is parsed as an `if` with then_body and else_body swapped.
+    # Compare with `while` and `until` which cannot do that and thus need
+    # distinct node types.
+  # end
 
   # local(?) variable assignment
   def on_vasgn(node)

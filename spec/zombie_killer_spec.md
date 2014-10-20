@@ -323,6 +323,24 @@ if cond
 end
 ```
 
+Zombie Killer translates the `then` body of an `unless` statement.
+
+**Original**
+
+```ruby
+unless cond
+  Ops.add(1, 1)
+end
+```
+
+**Translated**
+
+```ruby
+unless cond
+  1 + 1
+end
+```
+
 It translates both branches of an `if` statement, independently of each other.
 
 **Original**
