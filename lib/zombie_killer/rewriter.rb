@@ -45,42 +45,67 @@ class ZombieKillerRewriter < Parser::Rewriter
     :self,
     :false, :true,
     :int, :float,
-    :str, :sym,
-    :array, :hash, :pair        # may contain nils but they are not nil
+    :str, :sym, :regexp,
+    :array, :hash, :pair, :irange, # may contain nils but they are not nil
+    :dstr,                      # "String #{interpolation}" mixes :str, :begin
+    :dsym                       # :"#{foo}"
   ].to_set
 
   # FIXME
   # How can we ensure that code modifications do not make some unhandled again?
   HANDLED_NODE_TYPES = [
+    :alias,                     # Method alias
     :and,                       # &&
     :arg,                       # One argument
     :args,                      # All arguments
+    :back_ref,                  # Regexp backreference, $`; $&; $'
     :begin,                     # A simple sequence
     :block,                     # A closure, not just any scope
+    :block_pass,                # Pass &foo as an arg which is a block, &:foo
+    :blockarg,                  # An argument initialized with a block def m(&b)
     :casgn,                     # Constant assignment/definition
+    :cbase,                     # Base/root of constant tree, ::Foo
     :class,                     # Class body
+    :cvar,                      # Class @@variable
+    :cvassgn,                   # Class @@variable = assignment
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
-    :dstr,                      # "String #{interpolation}" mixes :str, :begin
+    :defs,                      # Method definition on self
     :ensure,                    # Exception ensuring
+    :for,                       # For v in enum;
+    :gvar,                      # Global $variable
+    :gvassgn,                   # Global $variable = assignment
     :if,                        # If and Unless
     :ivar,                      # Instance variable value
     :ivasgn,                    # Instance variable assignment
     :kwbegin,                   # A variant of begin; for rescue and while_post
+    :kwoptarg,                  # Keyword optional argument, def m(a: 1)
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
     :module,                    # Module body
     :nil,                       # nil literal
+    :nth_ref,                   # Regexp back references: $1, $2...
+    :op_asgn,                   # a %= b where % is any operator except || &&
+    :optarg,                    # Optional argument
     :or,                        # ||
+    :postexe,                   # END { }
+    :regopt,                    # options tacked on a :regexp
     :resbody,                   # One rescue clause in a :rescue construct
     :rescue,                    # Groups the begin and :resbody
+    :restarg,                   # Rest of arguments, (..., *args)
     :return,                    # Method return
+    #:sclass,                    # Singleton class, class << foo
     :send,                      # Send a message AKA Call a method
+    :splat,                     # Array *splatting
+    :super,                     # Call the ancestor method
     :unless,                    # Unless AKA If-Not
     :until,                     # Until AKA While-Not
     :until_post,                # Until with post-condtion
     :while,                     # While loop
-    :while_post                 # While loop with post-condition
+    :while_post,                # While loop with post-condition
+    :xstr,                      # Executed `string`, backticks
+    :yield,                     # Call the unnamed block
+    :zsuper                     # Zero argument :super
   ].to_set + NICE_LITERAL_NODE_TYPES
 
   def process(node)
@@ -107,6 +132,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   rescue => e
     oops(node, e)
   end
+  alias_method :on_defs, :on_def
 
   def on_if(node)
     cond, then_body, else_body = *node
@@ -163,10 +189,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     # clean slate
     scope.clear
   end
-
-  def on_until(node)
-    on_while node
-  end
+  alias_method :on_until, :on_while
 
   # Exceptions:
   # `raise` is an ordinary :send for the parser
