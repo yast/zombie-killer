@@ -93,6 +93,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :resbody,                   # One rescue clause in a :rescue construct
     :rescue,                    # Groups the begin and :resbody
     :restarg,                   # Rest of arguments, (..., *args)
+    :retry,                     # Retry a begin-rescue block
     :return,                    # Method return
     #:sclass,                    # Singleton class, class << foo
     :send,                      # Send a message AKA Call a method
@@ -198,11 +199,15 @@ class ZombieKillerRewriter < Parser::Rewriter
     # (:rescue, begin-block, resbody..., else-block-or-nil)
     begin_body, *rescue_bodies, else_body = *node
 
-    process(begin_body)
-    process(else_body)
-    rescue_bodies.each do |r|
-      process(r)
+    @source_rewriter.transaction do
+      process(begin_body)
+      process(else_body)
+      rescue_bodies.each do |r|
+        process(r)
+      end
     end
+  rescue TooComplexToTranslateError
+    warning "begin-rescue is too complex to translate due to a retry"
   end
 
   def on_resbody(node)
@@ -224,6 +229,11 @@ class ZombieKillerRewriter < Parser::Rewriter
     # guarded-code may be a :rescue or not
 
     scope.clear
+  end
+
+  def on_retry(node)
+    # that makes the :rescue a loop, top-down data-flow fails
+    raise TooComplexToTranslateError
   end
 
   private

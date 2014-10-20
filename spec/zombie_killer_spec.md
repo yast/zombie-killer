@@ -639,6 +639,28 @@ end
 yast rescue nil
 ```
 
+### Retry
+
+The `retry` statement makes the begin-body effectively a loop which limits
+our translation possibilities.
+
+Zombie Killer does not translate a begin-body when a rescue contains a retry.
+
+**Unchanged**
+
+```ruby
+def foo
+  v = 1
+  begin
+    Ops.add(v, 1)
+    maybe_raise
+  rescue
+    v = nil
+    retry
+  end
+end
+```
+
 Blocks
 ------
 
