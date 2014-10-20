@@ -81,7 +81,8 @@ class RSpecRenderer < Redcarpet::Render::Base
     if text =~ /^\*\*(.*)\*\*$/
       @next_block_type = $1.downcase.to_sym
     else
-      @description = text.split(/\.(\s+|$)/).first.sub(/^Zombie Killer /, "")
+      first_sentence = text.split(/\.(\s+|$)/).first
+      @description = first_sentence.sub(/^Zombie Killer /, "").sub(/\n/, " ")
     end
 
     nil
