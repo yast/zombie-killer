@@ -22,8 +22,7 @@ Table Of Contents
 1. Loops
     1. While and Until
 1. Exceptions
-1. Too Complex Code
-    1. Block
+1. Blocks
 1. Formatting
 
 Concepts
@@ -603,22 +602,15 @@ ensure
 end
 ```
 
-Too Complex Code
-----------------
+Blocks
+------
 
-Too Complex Code is one that contains a block.
+Inside a block the data flow is more complex than we handle now.
+After it, we start anew.
 
-Translating that properly requires data flow analysis which we do not do yet.
+Zombie Killer does not translate inside a block and resumes with a clean slate.
 
-
-### Block
-
-Inside and after a block the data flow is more complex than we handle now.
-Up to the beginning of the block we could do it but currently we don't.
-
-Zombie Killer does not translate anything that contains a block.
-
-**Unchanged**
+**Original**
 
 ```ruby
 v = 1
@@ -628,6 +620,26 @@ v = Ops.add(v, 1)
   v = Ops.add(v, 1)
   v = uglify
 end
+
+v = Ops.add(v, 1)
+w = 1
+w = Ops.add(w, 1)
+```
+
+**Translated**
+
+```ruby
+v = 1
+v = v + 1
+
+2.times do
+  v = Ops.add(v, 1)
+  v = uglify
+end
+
+v = Ops.add(v, 1)
+w = 1
+w = w + 1
 ```
 
 Formatting
