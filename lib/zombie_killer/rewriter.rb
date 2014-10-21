@@ -56,6 +56,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   HANDLED_NODE_TYPES = [
     :alias,                     # Method alias
     :and,                       # &&
+    :and_asgn,                  # &&=
     :arg,                       # One argument
     :args,                      # All arguments
     :back_ref,                  # Regexp backreference, $`; $&; $'
@@ -91,6 +92,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :op_asgn,                   # a %= b where % is any operator except || &&
     :optarg,                    # Optional argument
     :or,                        # ||
+    :or_asgn,                   # ||=
     :postexe,                   # END { }
     :regopt,                    # options tacked on a :regexp
     :resbody,                   # One rescue clause in a :rescue construct
@@ -209,6 +211,24 @@ class ZombieKillerRewriter < Parser::Rewriter
     name, value = * node
     return if value.nil? # and-asgn, or-asgn, resbody do this
     scope[name] = nice(value)
+  end
+
+  def on_and_asgn(node)
+    super
+    var, value = * node
+    return if var.type != :lvasgn
+    name = var.children[0]
+
+    scope[name] &&= nice(value)
+  end
+
+  def on_or_asgn(node)
+    super
+    var, value = * node
+    return if var.type != :lvasgn
+    name = var.children[0]
+
+    scope[name] ||= nice(value)
   end
 
   def on_send(node)

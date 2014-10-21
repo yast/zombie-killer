@@ -14,6 +14,9 @@ Table Of Contents
 1. Concepts
 1. Literals
 1. Variables
+1. Assigments
+   1. And-assignment
+   1. Or-assignment
 1. Calls Preserving Niceness
     1. Calls Generating Niceness
 1. Translation Below Top Level
@@ -256,6 +259,93 @@ class << self
   v = v
   Ops.add(v, "literal")
 end
+```
+
+Assignments
+-----------
+
+### And-assignment
+
+Zombie Killer manages niceness correctly in presence of `&&=`.
+
+**Original**
+
+```ruby
+nice1 = true
+nice2 = true
+ugly1 = nil
+ugly2 = nil
+
+nice1 &&= true
+nice2 &&= nil
+ugly1 &&= true
+ugly2 &&= nil
+
+Ops.add(nice1, 1)
+Ops.add(nice2, 1)
+Ops.add(ugly1, 1)
+Ops.add(ugly2, 1)
+```
+
+**Translated**
+
+```ruby
+nice1 = true
+nice2 = true
+ugly1 = nil
+ugly2 = nil
+
+nice1 &&= true
+nice2 &&= nil
+ugly1 &&= true
+ugly2 &&= nil
+
+nice1 + 1
+Ops.add(nice2, 1)
+Ops.add(ugly1, 1)
+Ops.add(ugly2, 1)
+```
+
+### Or-assignment
+
+Zombie Killer manages niceness correctly in presence of `||=`.
+
+**Original**
+
+```ruby
+nice1 = true
+nice2 = true
+ugly1 = nil
+ugly2 = nil
+
+nice1 ||= true
+nice2 ||= nil
+ugly1 ||= true
+ugly2 ||= nil
+
+Ops.add(nice1, 1)
+Ops.add(nice2, 1)
+Ops.add(ugly1, 1)
+Ops.add(ugly2, 1)
+```
+
+**Translated**
+
+```ruby
+nice1 = true
+nice2 = true
+ugly1 = nil
+ugly2 = nil
+
+nice1 ||= true
+nice2 ||= nil
+ugly1 ||= true
+ugly2 ||= nil
+
+nice1 + 1
+nice2 + 1
+ugly1 + 1
+Ops.add(ugly2, 1)
 ```
 
 Calls Preserving Niceness
