@@ -225,6 +225,26 @@ class B
 end
 ```
 
+Zombie Killer does not confuse variables across singleton `class`s.
+
+**Unchanged**
+
+```ruby
+class << self
+  v = "literal"
+end
+
+class << self
+  # The assignment is needed to convince Ruby parser that the "v" reference in
+  # the "Ops.add" call later refers to a variable, not a method. This means it
+  # will be parsed as a "lvar" node (which can possibly be nice), not a "send"
+  # node (which can't be nice).
+
+  v = v
+  Ops.add(v, "literal")
+end
+```
+
 Calls Preserving Niceness
 -------------------------
 
