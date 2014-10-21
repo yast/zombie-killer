@@ -83,6 +83,8 @@ class ZombieKillerRewriter < Parser::Rewriter
     :kwoptarg,                  # Keyword optional argument, def m(a: 1)
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
+    :masgn,                     # Multiple assigment: a, b = c, d
+    :mlhs,                      # Left-hand side of a multiple assigment: a, b = c, d
     :module,                    # Module body
     :nil,                       # nil literal
     :nth_ref,                   # Regexp back references: $1, $2...

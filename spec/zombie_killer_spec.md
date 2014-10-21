@@ -127,6 +127,18 @@ v = "Hello"
 v + "World"
 ```
 
+Zombie Killer doesn't translate `Ops.add(nice_variable, literal)` when the
+variable got it's niceness via multiple assignemnt. We chose to ignore multiple
+assigments for now because of their complicated semantics (especially in
+presence of splats).
+
+**Unchanged**
+
+```ruby
+v1, v2 = "Hello", "World"
+Ops.add(v1, v2)
+```
+
 Zombie Killer translates `Ops.add(nontrivially_nice_variable, literal)`.
 
 **Original**
