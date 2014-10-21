@@ -73,6 +73,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :cvasgn,                    # Class @@variable = assignment
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
+    :defined?,                  # defined? statement
     :defs,                      # Method definition on self
     :ensure,                    # Exception ensuring
     :for,                       # For v in enum;
