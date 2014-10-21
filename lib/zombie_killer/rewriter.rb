@@ -141,6 +141,22 @@ class ZombieKillerRewriter < Parser::Rewriter
     oops(node, e)
   end
 
+  def on_module(node)
+    @scopes.push VariableScope.new
+    super
+    @scopes.pop
+  rescue => e
+    oops(node, e)
+  end
+
+  def on_class(node)
+    @scopes.push VariableScope.new
+    super
+    @scopes.pop
+  rescue => e
+    oops(node, e)
+  end
+
   def on_if(node)
     cond, then_body, else_body = *node
     process(cond)

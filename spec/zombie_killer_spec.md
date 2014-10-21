@@ -185,6 +185,46 @@ def self.foo(v)
 end
 ```
 
+Zombie Killer does not confuse variables across `module`s.
+
+**Unchanged**
+
+```ruby
+module A
+  v = "literal"
+end
+
+module B
+  # The assignment is needed to convince Ruby parser that the "v" reference in
+  # the "Ops.add" call later refers to a variable, not a method. This means it
+  # will be parsed as a "lvar" node (which can possibly be nice), not a "send"
+  # node (which can't be nice).
+
+  v = v
+  Ops.add(v, "literal")
+end
+```
+
+Zombie Killer does not confuse variables across `class`s.
+
+**Unchanged**
+
+```ruby
+class A
+  v = "literal"
+end
+
+class B
+  # The assignment is needed to convince Ruby parser that the "v" reference in
+  # the "Ops.add" call later refers to a variable, not a method. This means it
+  # will be parsed as a "lvar" node (which can possibly be nice), not a "send"
+  # node (which can't be nice).
+
+  v = v
+  Ops.add(v, "literal")
+end
+```
+
 Calls Preserving Niceness
 -------------------------
 
