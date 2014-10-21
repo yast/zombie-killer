@@ -22,6 +22,7 @@ Table Of Contents
 1. Case
 1. Loops
     1. While and Until
+    1. For
 1. Exceptions
 1. Blocks
 1. Formatting
@@ -711,6 +712,45 @@ end while cond
 begin
   body_runs_before_condition
 end until cond
+```
+
+### For
+
+`for` loops are just syntax sugar for an `each` call with a block. Thus, we need
+to treat them as blocks.
+
+Zombie Killer does not translate inside a `for` and resumes with a clean slate.
+
+**Original**
+
+```ruby
+v = 1
+v = Ops.add(v, 1)
+
+for i in [1, 2, 3]
+  v = Ops.add(v, 1)
+  v = uglify
+end
+
+v = Ops.add(v, 1)
+w = 1
+w = Ops.add(w, 1)
+```
+
+**Translated**
+
+```ruby
+v = 1
+v = v + 1
+
+for i in [1, 2, 3]
+  v = Ops.add(v, 1)
+  v = uglify
+end
+
+v = Ops.add(v, 1)
+w = 1
+w = w + 1
 ```
 
 Exceptions

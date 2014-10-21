@@ -201,6 +201,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     # ignore body, clean slate
     scope.clear
   end
+  alias_method :on_for, :on_block
 
   def on_while(node)
     # ignore both condition and body,
