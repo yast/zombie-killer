@@ -96,7 +96,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :restarg,                   # Rest of arguments, (..., *args)
     :retry,                     # Retry a begin-rescue block
     :return,                    # Method return
-    #:sclass,                    # Singleton class, class << foo
+    :sclass,                    # Singleton class, class << foo
     :send,                      # Send a message AKA Call a method
     :splat,                     # Array *splatting
     :super,                     # Call the ancestor method
@@ -134,6 +134,30 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def on_defs(node)
+    @scopes.push VariableScope.new
+    super
+    @scopes.pop
+  rescue => e
+    oops(node, e)
+  end
+
+  def on_module(node)
+    @scopes.push VariableScope.new
+    super
+    @scopes.pop
+  rescue => e
+    oops(node, e)
+  end
+
+  def on_class(node)
+    @scopes.push VariableScope.new
+    super
+    @scopes.pop
+  rescue => e
+    oops(node, e)
+  end
+
+  def on_sclass(node)
     @scopes.push VariableScope.new
     super
     @scopes.pop
