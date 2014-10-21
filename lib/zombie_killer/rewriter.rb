@@ -64,6 +64,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :block,                     # A closure, not just any scope
     :block_pass,                # Pass &foo as an arg which is a block, &:foo
     :blockarg,                  # An argument initialized with a block def m(&b)
+    :break,                     # Break statement
     :case,                      # Case statement
     :casgn,                     # Constant assignment/definition
     :cbase,                     # Base/root of constant tree, ::Foo
@@ -87,6 +88,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     :masgn,                     # Multiple assigment: a, b = c, d
     :mlhs,                      # Left-hand side of a multiple assigment: a, b = c, d
     :module,                    # Module body
+    :next,                      # Next statement
     :nil,                       # nil literal
     :nth_ref,                   # Regexp back references: $1, $2...
     :op_asgn,                   # a %= b where % is any operator except || &&
