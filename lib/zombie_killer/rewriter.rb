@@ -70,14 +70,14 @@ class ZombieKillerRewriter < Parser::Rewriter
     :cbase,                     # Base/root of constant tree, ::Foo
     :class,                     # Class body
     :cvar,                      # Class @@variable
-    :cvassgn,                   # Class @@variable = assignment
+    :cvasgn,                    # Class @@variable = assignment
     :const,                     # Name of a class/module or name of a value
     :def,                       # Method definition
     :defs,                      # Method definition on self
     :ensure,                    # Exception ensuring
     :for,                       # For v in enum;
     :gvar,                      # Global $variable
-    :gvassgn,                   # Global $variable = assignment
+    :gvasgn,                    # Global $variable = assignment
     :if,                        # If and Unless
     :ivar,                      # Instance variable value
     :ivasgn,                    # Instance variable assignment
