@@ -121,44 +121,32 @@ class ZombieKillerRewriter < Parser::Rewriter
     scopes.innermost
   end
 
-  def on_def(node)
+  def with_new_scope_rescuing_oops(&block)
     scopes.with_new do
-      super
+      block.call
     end
   rescue => e
     oops(node, e)
+  end
+
+  def on_def(node)
+    with_new_scope_rescuing_oops { super }
   end
 
   def on_defs(node)
-    scopes.with_new do
-      super
-    end
-  rescue => e
-    oops(node, e)
+    with_new_scope_rescuing_oops { super }
   end
 
   def on_module(node)
-    scopes.with_new do
-      super
-    end
-  rescue => e
-    oops(node, e)
+    with_new_scope_rescuing_oops { super }
   end
 
   def on_class(node)
-    scopes.with_new do
-      super
-    end
-  rescue => e
-    oops(node, e)
+    with_new_scope_rescuing_oops { super }
   end
 
   def on_sclass(node)
-    scopes.with_new do
-      super
-    end
-  rescue => e
-    oops(node, e)
+    with_new_scope_rescuing_oops { super }
   end
 
   def on_if(node)
