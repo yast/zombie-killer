@@ -59,7 +59,7 @@ class RSpecRenderer < Redcarpet::Render::Base
     super
 
     @next_block_type = :unknown
-    @describe = Describe.new(description: ZombieKiller, blocks: [])
+    @describe = Describe.new(description: "ZombieKiller:", blocks: [])
   end
 
   def header(text, header_level)
@@ -70,7 +70,7 @@ class RSpecRenderer < Redcarpet::Render::Base
     end
 
     describe_at_level(header_level - 1).blocks << Describe.new(
-      description: text.downcase,
+      description: text.downcase + ":",
       blocks:      []
     )
 
