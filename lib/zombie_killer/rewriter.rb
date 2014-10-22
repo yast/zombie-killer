@@ -3,19 +3,7 @@ require "parser/current"
 require "set"
 require "unparser"
 
-# Tracks niceness for local variables visible at certain point
-class VariableScope < Hash
-  # @return [Boolean] nice
-  def [](varname)
-    super
-  end
-
-  # Set niceness for a variable
-  def []=(varname, nice)
-    super
-  end
-end
-
+require_relative "variable_scope"
 
 # We have encountered code that does satisfy our simplifying assumptions,
 # translating it would not be correct.
@@ -23,9 +11,10 @@ class TooComplexToTranslateError < Exception
 end
 
 class ZombieKillerRewriter < Parser::Rewriter
+  attr_reader :scopes
+
   def initialize(unsafe: false)
-    outer_scope = VariableScope.new
-    @scopes = [outer_scope]
+    @scopes = VariableScopeStack.new
     @unsafe = unsafe
   end
 
@@ -129,45 +118,45 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   # currently visible scope
   def scope
-    @scopes.last
+    scopes.innermost
   end
 
   def on_def(node)
-    @scopes.push VariableScope.new
-    super
-    @scopes.pop
+    scopes.with_new do
+      super
+    end
   rescue => e
     oops(node, e)
   end
 
   def on_defs(node)
-    @scopes.push VariableScope.new
-    super
-    @scopes.pop
+    scopes.with_new do
+      super
+    end
   rescue => e
     oops(node, e)
   end
 
   def on_module(node)
-    @scopes.push VariableScope.new
-    super
-    @scopes.pop
+    scopes.with_new do
+      super
+    end
   rescue => e
     oops(node, e)
   end
 
   def on_class(node)
-    @scopes.push VariableScope.new
-    super
-    @scopes.pop
+    scopes.with_new do
+      super
+    end
   rescue => e
     oops(node, e)
   end
 
   def on_sclass(node)
-    @scopes.push VariableScope.new
-    super
-    @scopes.pop
+    scopes.with_new do
+      super
+    end
   rescue => e
     oops(node, e)
   end
@@ -176,13 +165,13 @@ class ZombieKillerRewriter < Parser::Rewriter
     cond, then_body, else_body = *node
     process(cond)
 
-    @scopes.push scope.dup
-    process(then_body)
-    @scopes.pop
+    scopes.with_copy do
+      process(then_body)
+    end
 
-    @scopes.push scope.dup
-    process(else_body)
-    @scopes.pop
+    scopes.with_copy do
+      process(else_body)
+    end
 
     # clean slate
     scope.clear
@@ -200,9 +189,9 @@ class ZombieKillerRewriter < Parser::Rewriter
     process(expr)
 
     cases.each do |case_|
-      @scopes.push scope.dup
-      process(case_)
-      @scopes.pop
+      scopes.with_copy do
+        process(case_)
+      end
     end
 
     # clean slate
