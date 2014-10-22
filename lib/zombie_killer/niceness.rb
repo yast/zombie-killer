@@ -26,7 +26,7 @@ module Niceness
   end
 
   def nice_variable(node)
-    node.type == :lvar && scope[node.children.first]
+    node.type == :lvar && scope[node.children.first].nice
   end
 
   # Methods that preserve niceness if all their arguments are nice

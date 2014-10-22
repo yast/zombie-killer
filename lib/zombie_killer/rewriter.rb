@@ -182,7 +182,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     super
     name, value = * node
     return if value.nil? # and-asgn, or-asgn, resbody do this
-    scope[name] = nice(value)
+    scope[name].nice = nice(value)
   end
 
   def on_and_asgn(node)
@@ -191,7 +191,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     return if var.type != :lvasgn
     name = var.children[0]
 
-    scope[name] &&= nice(value)
+    scope[name].nice &&= nice(value)
   end
 
   def on_or_asgn(node)
@@ -200,7 +200,7 @@ class ZombieKillerRewriter < Parser::Rewriter
     return if var.type != :lvasgn
     name = var.children[0]
 
-    scope[name] ||= nice(value)
+    scope[name].nice ||= nice(value)
   end
 
   def on_send(node)
