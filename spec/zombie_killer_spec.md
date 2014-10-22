@@ -632,6 +632,99 @@ v = 1
 v + 1
 ```
 
+### Condition Ensuring Niceness
+
+Zombie Killer recognizes a nice value ensured by a `nil?` condition.
+
+**Original**
+
+```ruby
+v = ugly
+unless v.nil?
+  Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+v = ugly
+unless v.nil?
+  v + 1
+end
+```
+
+Zombie Killer recognizes a nice value ensured by a `== nil` condition.
+
+**Original**
+
+```ruby
+v = ugly
+unless v == nil
+  Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+v = ugly
+unless v == nil
+  v + 1
+end
+```
+
+Zombie Killer recognizes a nice value ensured by a `!= nil` condition.
+
+**Original**
+
+```ruby
+v = ugly
+if v != nil
+  Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+v = ugly
+if v != nil
+  v + 1
+end
+```
+
+Zombie Killer recognizes a nice value ensured by a complex condition.
+
+**Original**
+
+```ruby
+v = ugly
+if v != nil && v != 0
+  Ops.add(v, 1)
+end
+```
+
+**Translated**
+
+```ruby
+v = ugly
+if v != nil && v != 0
+  v + 1
+end
+```
+
+Zombie Killer recognizes uglification in complex conditions.
+
+**Unchanged**
+
+```ruby
+v = ugly
+if v != nil && cond(v = uglify)
+  Ops.add(v, 1)
+end
+```
+
 Case
 ----
 
