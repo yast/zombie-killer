@@ -3,6 +3,7 @@ require "parser/current"
 require "set"
 require "unparser"
 
+require_relative "niceness"
 require_relative "variable_scope"
 
 # We have encountered code that does satisfy our simplifying assumptions,
@@ -11,6 +12,8 @@ class TooComplexToTranslateError < Exception
 end
 
 class ZombieKillerRewriter < Parser::Rewriter
+  include Niceness
+
   attr_reader :scopes
 
   def initialize(unsafe: false)
@@ -28,17 +31,6 @@ class ZombieKillerRewriter < Parser::Rewriter
     warning "(outer scope) is too complex to translate"
     buffer.source
   end
-
-  # Literals are nice, except the nil literal.
-  NICE_LITERAL_NODE_TYPES = [
-    :self,
-    :false, :true,
-    :int, :float,
-    :str, :sym, :regexp,
-    :array, :hash, :pair, :irange, # may contain nils but they are not nil
-    :dstr,                      # "String #{interpolation}" mixes :str, :begin
-    :dsym                       # :"#{foo}"
-  ].to_set
 
   # FIXME
   # How can we ensure that code modifications do not make some unhandled again?
@@ -296,48 +288,6 @@ class ZombieKillerRewriter < Parser::Rewriter
       n_receiver.children[0] == nil &&
       n_receiver.children[1] == namespace &&
       n_message == message
-  end
-
-  def nice(node)
-    nice_literal(node) || nice_variable(node) || nice_send(node) ||
-      nice_begin(node)
-  end
-
-  def nice_literal(node)
-    NICE_LITERAL_NODE_TYPES.include? node.type
-  end
-
-  def nice_variable(node)
-    node.type == :lvar && scope[node.children.first]
-  end
-
-  # Methods that preserve niceness if all their arguments are nice
-  # These are global, called with a nil receiver
-  NICE_GLOBAL_METHODS = {
-    # message, number of arguments
-    :_ => 1,
-  }.freeze
-
-  NICE_OPERATORS = {
-    # message, number of arguments (other than receiver)
-    :+ => 1,
-  }.freeze
-
-  def nice_send(node)
-    return false unless node.type == :send
-    receiver, message, *args = *node
-
-    if receiver.nil?
-      arity = NICE_GLOBAL_METHODS.fetch(message, -1)
-    else
-      return false unless nice(receiver)
-      arity = NICE_OPERATORS.fetch(message, -1)
-    end
-    return args.size == arity && args.all?{ |a| nice(a) }
-  end
-
-  def nice_begin(node)
-    node.type == :begin && nice(node.children.last)
   end
 
   def replace_node(old_node, new_node)
