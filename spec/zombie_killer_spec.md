@@ -608,7 +608,72 @@ v = nil unless cond
 Ops.add(v, 1)
 ```
 
-### Resuming with a clean slate after an `if`
+### Combining branch state
+
+Regarding the effects of code on niceness of a particular variable,
+we have four cases:
+
+1. Niceness does not change.
+2. Becomes nice.
+3. Becomes ugly.
+4. Niceness changes in one of the above 3 ways in one code path but in
+a different way in another code path, so the resulting effect is
+unknown.
+
+In the following code, the variable names mean *n*ice, and *u*gly,
+with numbers corresponding to the above cases.
+
+Zombie Killer combines variable niceness from both branches.
+
+**Original**
+
+```ruby
+u1 = nil; n1 = 1
+u4 = nil; n4 = 1
+
+if cond
+  n2 = 1
+  u3 = ugly
+  u4 = 1
+else
+  n2 = 2
+  u3 = uglier
+  n4 = nil
+end
+
+Ops.add(u1, 1)
+Ops.add(n1, 1)
+Ops.add(n2, 1)
+Ops.add(u3, 1)
+Ops.add(u4, 1)
+Ops.add(n4 ,1)
+```
+
+**Translated**
+
+```ruby
+u1 = nil; n1 = 1
+u4 = nil; n4 = 1
+
+if cond
+  n2 = 1
+  u3 = ugly
+  u4 = 1
+else
+  n2 = 2
+  u3 = uglier
+  n4 = nil
+end
+
+Ops.add(u1, 1)
+n1 + 1
+n2 + 1
+Ops.add(u3, 1)
+Ops.add(u4, 1)
+Ops.add(n4 ,1)
+```
+
+### Continuing after an `if`
 
 It translates zombies whose arguments were found nice after an `if`.
 
