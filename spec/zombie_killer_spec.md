@@ -623,7 +623,7 @@ unknown.
 In the following code, the variable names mean *n*ice, and *u*gly,
 with numbers corresponding to the above cases.
 
-Zombie Killer combines variable niceness from both branches.
+Zombie Killer combines variable niceness from both branches XFAIL.
 
 **Original**
 
