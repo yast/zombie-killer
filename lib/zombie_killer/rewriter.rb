@@ -3,6 +3,7 @@ require "parser/current"
 require "set"
 require "unparser"
 
+require_relative "data_source_annotator"
 require_relative "niceness"
 require_relative "variable_scope"
 
@@ -26,6 +27,7 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   def rewrite(buffer, ast)
+    ast = DataSourceAnnotator.new.process(ast)
     super
   rescue TooComplexToTranslateError
     warning "(outer scope) is too complex to translate"
