@@ -24,10 +24,5 @@ Dependencies: run `bundle`.
 Usage
 -----
 
-`zk FILE...` works in place, so it is best to use in a git checkout.
-
-For a practical demo, try
-
-```bash
-find -name \*.rb | xargs zk
-```
+`zk [FILES...]` works in place, so it is best to use in a Git checkout.
+By default it finds all `*.rb` files under the current directory.
