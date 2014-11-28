@@ -29,15 +29,5 @@ Usage
 For a practical demo, try
 
 ```bash
-find -name \*.rb | xargs zk --unsafe
+find -name \*.rb | xargs zk
 ```
-
-Issues
-------
-
-Notice the `--unsafe` (or `-u`) option. Without it, Zombie Killer works well,
-on its test cases, but fails on longer real code.
-It is a cautionary measure
-to prevent incorrect translation of syntactic constructs
-that affect the control flow in ways
-that break our simplistic data flow analysis algorithm.
