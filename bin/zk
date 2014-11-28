@@ -14,6 +14,7 @@ Arguments:
 Options:
   -u, --unsafe               Translate even constructs not known to be safe.
   -s, --stats                Also print statistics about node types.
+  -v, --version              Print version information and exit.
   -h, --help                 Print help and exit.
 EOT
 
