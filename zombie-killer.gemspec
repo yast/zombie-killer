@@ -18,12 +18,13 @@ Gem::Specification.new do |spec|
   spec.files    = Dir[
     "LICENSE",
     "README.md",
+    "bin/count_method_calls",
     "bin/zk",
     "lib/**/*.rb",
     "spec/*.md",
     "spec/*.rb",
   ]
-  spec.executables = ["zk"]
+  spec.executables = ["zk", "count_method_calls"]
 
   # define LOAD_PATH
   spec.require_path = "lib"
