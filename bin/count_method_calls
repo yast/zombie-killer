@@ -1,0 +1,76 @@
+#! /usr/bin/env ruby
+usage = <<'EOT'
+Usage:
+  count_method_calls PATTERN RUBY_FILE
+  find -name \*.rb | count_method_calls --batch PATTERN
+
+Where PATTERN is a shell-style pattern, for example
+  {Builtins,Ops}.*    for all zombies
+  Ops.get*            for all variants of `get`
+  *\?                 for queries
+EOT
+
+require "parser"
+require "parser/current"
+
+class MethodCounter < Parser::AST::Processor
+  def initialize(pattern)
+    @pattern = pattern
+    super()
+  end
+
+  def count(node)
+    @count = 0
+    process(node)
+    @count
+  end
+
+  # called by #process
+  def on_send(node)
+    super
+    receiver, message = *node
+    if receiver.nil?
+      method = message.to_s
+    else
+      method = "#{const_to_s(receiver)}.#{message}"
+    end
+    # extglob: {brace,alternatives}
+    @count += 1 if File.fnmatch(@pattern, method, File::FNM_EXTGLOB)
+  end
+
+  private
+
+  def const_to_s(node)
+    if node && node.type == :const
+      parent, name = *node
+      if parent.nil?
+        name.to_s
+      else
+        "#{const_to_s(parent)}.#{name}"
+      end
+    else
+      "%"                      # a non-identifier placeholder for "expression"
+    end
+  end
+end
+
+def count(pattern, filename)
+  buffer = Parser::Source::Buffer.new(filename).read
+  parser = Parser::CurrentRuby.new
+  ast    = parser.parse(buffer)
+  MethodCounter.new(pattern).count(ast)
+end
+
+if ARGV[0] == "--batch"
+  total = 0
+  $stdin.each_line do |filename|
+    c = count(ARGV[1], filename.chomp)
+    total += c
+    printf("%5d %s", c, filename)
+  end
+  printf("%5d %s", total, "*TOTAL*")
+elsif ARGV.size == 2
+  puts count(ARGV[0], ARGV[1])
+else
+  $stderr.print usage
+end
