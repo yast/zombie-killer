@@ -12,6 +12,7 @@ Usage: zk [options] [FILES...]
 Arguments:
   FILES  Files to operate on, patterns allowed [default: **/*.rb]
 Options:
+  -e, --eager                Translate all zombies regardless of niceness.
   -u, --unsafe               Translate even constructs not known to be safe.
   -s, --stats                Also print statistics about node types.
   -v, --version              Print version information and exit.
@@ -21,7 +22,7 @@ EOT
 begin
   options = Docopt.docopt(doc, help: true, version: ZombieKiller::VERSION)
 
-  killer = ZombieKiller.new
+  killer = ZombieKiller.new(eager: options["--eager"])
 
   files = options["FILES"]
   files << "**/*.rb" if files.empty?
