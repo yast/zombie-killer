@@ -63,10 +63,14 @@ class ZombieKillerRewriter < Parser::Rewriter
     :if,                        # If and Unless
     :ivar,                      # Instance variable value
     :ivasgn,                    # Instance variable assignment
+    :kwarg,                     # Keyword argument, def m(a:)
     :kwbegin,                   # A variant of begin; for rescue and while_post
     :kwoptarg,                  # Keyword optional argument, def m(a: 1)
+    :kwrestarg,                 # Rest of keyword arguments, def m(**kwargs)
+    :kwsplat,                   # Hash **splatting
     :lvar,                      # Local variable value
     :lvasgn,                    # Local variable assignment
+    :match_with_lvasgn,         # /regex/ =~ value
     :masgn,                     # Multiple assigment: a, b = c, d
     :mlhs,                      # Left-hand side of a multiple assigment: a, b = c, d
     :module,                    # Module body
