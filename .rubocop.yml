@@ -1,0 +1,14 @@
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: double_quotes
+
+Metrics/ClassLength:
+  Max: 250
+
+Metrics/LineLength:
+  Max: 99
+
+#inherit_from: .rubocop_todo.yml
+

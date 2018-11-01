@@ -34,6 +34,9 @@ Gem::Specification.new do |spec|
   spec.add_dependency "parser",   "> 2.2.0.pre.5", "< 3"
   spec.add_dependency "unparser", "~> 0"
 
+  spec.add_development_dependency "coveralls"
+  spec.add_development_dependency "rake"
   spec.add_development_dependency "rspec",     "> 2", "< 4"
   spec.add_development_dependency "redcarpet", "~> 3"
+  spec.add_development_dependency "simplecov"
 end
