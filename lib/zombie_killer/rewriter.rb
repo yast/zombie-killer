@@ -8,9 +8,20 @@ require_relative "variable_scope"
 
 # We have encountered code that does satisfy our simplifying assumptions,
 # translating it would not be correct.
-class TooComplexToTranslateError < Exception
+class TooComplexToTranslateError < RuntimeError
 end
 
+# An error related to a node
+class NodeError < RuntimeError
+  attr_reader :node
+
+  def initialize(message, node)
+    @node = node
+    super(message)
+  end
+end
+
+# The main rewriter
 class ZombieKillerRewriter < Parser::Rewriter
   include Niceness
 
@@ -105,8 +116,8 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   def process(node)
     return if node.nil?
-    if ! @unsafe
-      oops(node, RuntimeError.new("Unknown node type #{node.type}")) unless
+    unless @unsafe
+      raise NodeError.new("Unknown node type #{node.type}", node) unless
         HANDLED_NODE_TYPES.include? node.type
     end
     super
@@ -121,8 +132,10 @@ class ZombieKillerRewriter < Parser::Rewriter
     scopes.with_new do
       block.call
     end
-  rescue => e
-    oops(node, e)
+  rescue NodeError => e
+    puts e
+    puts "Node exception @ #{e.node.loc.expression}"
+    puts "Offending node: #{e.node.inspect}"
   end
 
   def on_def(node)
@@ -279,12 +292,6 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   private
-
-  def oops(node, exception)
-    puts "Node exception @ #{node.loc.expression}"
-    puts "Offending node: #{node.inspect}"
-    raise exception
-  end
 
   def is_call(node, namespace, message)
     n_receiver, n_message = *node
