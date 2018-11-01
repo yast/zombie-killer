@@ -22,7 +22,13 @@ class ZombieKiller
       rewriter = eager ? EagerRewriter.new : ZombieKillerRewriter.new(unsafe: unsafe)
       buffer   = Parser::Source::Buffer.new(filename)
       buffer.source = c
-      rewriter.rewrite(buffer, parser.parse(buffer))
+      ast = parser.parse(buffer)
+      if ast
+        rewriter.rewrite(buffer, ast)
+      else
+        puts "Parse error for '#{filename}', returning it unchanged"
+        return code
+      end
     end
   end
   alias_method :kill, :kill_string
@@ -32,6 +38,9 @@ class ZombieKiller
     new_string = kill_string(File.read(filename), filename, unsafe: unsafe)
 
     File.write(new_filename, new_string)
+  rescue
+    puts "While processing #{filename}"
+    raise
   end
 
   private
