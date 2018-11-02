@@ -3,7 +3,65 @@ require "set"
 
 # Rewrite Zombies with their idiomatic replacements
 class EagerRewriter < Parser::TreeRewriter
-  OPS = Parser::AST::Node.new(:const, [nil, :Ops])
+  def self.s(name, *children)
+    Parser::AST::Node.new(name, children)
+  end
+
+  def s(name, *children)
+    self.class.s(name, *children)
+  end
+
+  OPS = s(:const, nil, :Ops)
+  BUILTINS = s(:const, nil, :Builtins)
+
+  class ARG; end
+  class ARG1 < ARG; end
+  class ARG2 < ARG; end
+  class ARG3 < ARG; end
+
+
+  class Matcher
+    def match?(node)
+    end
+  end
+
+  # Rewriting rule
+  class Rule
+    attr_reader :from, :to, :cond
+
+    def initialize(from:, to:, cond: -> { true })
+      @from = from
+      @to = to
+      @cond = cond
+    end
+
+    def match?(node)
+      match2(from, node)
+    end
+    def match2(expected, actual)
+      return true if expected.nil? && actual.nil?
+      return nil if expected.nil? || actual.nil?
+      return nil if expected.type != actual.type
+
+    end
+  end
+
+  @rules = []
+  def self.r(**kwargs)
+    @rules << Rule.new(**kwargs)
+  end
+
+  [
+    [:lvasgn, :lvar],           # a = b
+    [:ivasgn, :ivar],           # @a = @b
+    [:cvasgn, :cvar],           # @@a = @@b
+  ].each do |xvasgn, xvar|
+    r from: s(xvasgn,
+              ARG1,
+              s(:send, s(xvar, ARG2), :+, ARG3)), # @ARG1 = @ARG2 + ARG3
+      cond: ->(a, b, _c) { a == b },
+      to:   s(:op_asgn, s(xvasgn, ARG1), :+, ARG3) # @ARG1 += ARG3
+  end
 
   INFIX = {
     add: :+,
@@ -21,13 +79,34 @@ class EagerRewriter < Parser::TreeRewriter
     greater_or_equal: :>=
   }.freeze
 
-  def s(name, *children)
-    Parser::AST::Node.new(name, children)
+  INFIX.each do |prefix, infix|
+    r from: s(:send, OPS, prefix, ARG1, ARG2), # Ops.add(ARG1, ARG2)
+      to:   s(:send, ARG1, infix, ARG2)        # ARG1 + ARG2
   end
+
+  r from: s(:send, s(:send, BUILTINS, :size, ARG1), :>, s(:int, 0)), # Builtins.size(ARG1) > 0
+    to:   s(:send, s(:send, ARG1, :empty?), :!) # !ARG1.empty?
+
+  r from: s(:send, s(:send, BUILTINS, :size, ARG1), :==, s(:int, 0)), # Builtins.size(ARG1) == 0
+    to:   s(:send, ARG1, :empty?) # ARG1.empty?
+
+  r from: s(:send, s(:send, BUILTINS, :size, ARG1), :<, s(:int, 1)), # Builtins.size(ARG1) < 1
+    to:   s(:send, ARG1, :empty?) # ARG1.empty?
+
+  # FIXME!
+  @rules = []
+  r from: s(:send, BUILTINS, :size, ARG1), # Builtins.size(ARG1)
+    to:   s(:send, ARG1, :size)            # ARG1.size
 
   def replace_node(old_node, new_node)
     source_range = old_node.loc.expression
     replace(source_range, Unparser.unparse(new_node))
+  end
+
+  def process(node)
+    return if node.nil?
+    puts "PN #{node.type}"
+    super
   end
 
   def on_send(node)
