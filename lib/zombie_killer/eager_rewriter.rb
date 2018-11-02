@@ -1,54 +1,26 @@
 require "unparser"
 require "set"
 
+require "zombie_killer/rule"
+
 # Rewrite Zombies with their idiomatic replacements
 class EagerRewriter < Parser::TreeRewriter
-  def self.s(name, *children)
-    Parser::AST::Node.new(name, children)
-  end
-
-  def s(name, *children)
-    self.class.s(name, *children)
-  end
+  include AST::Sexp # the `s` method
+  extend AST::Sexp
 
   OPS = s(:const, nil, :Ops)
   BUILTINS = s(:const, nil, :Builtins)
 
-  class ARG; end
-  class ARG1 < ARG; end
-  class ARG2 < ARG; end
-  class ARG3 < ARG; end
-
-
-  class Matcher
-    def match?(node)
-    end
+  @rules = {}
+  class << self
+    attr_reader :rules
   end
 
-  # Rewriting rule
-  class Rule
-    attr_reader :from, :to, :cond
-
-    def initialize(from:, to:, cond: -> { true })
-      @from = from
-      @to = to
-      @cond = cond
-    end
-
-    def match?(node)
-      match2(from, node)
-    end
-    def match2(expected, actual)
-      return true if expected.nil? && actual.nil?
-      return nil if expected.nil? || actual.nil?
-      return nil if expected.type != actual.type
-
-    end
-  end
-
-  @rules = []
   def self.r(**kwargs)
-    @rules << Rule.new(**kwargs)
+    rule = Rule.new(**kwargs)
+    type = rule.from.type
+    @rules[type] ||= []
+    @rules[type] << rule
   end
 
   [
@@ -94,7 +66,7 @@ class EagerRewriter < Parser::TreeRewriter
     to:   s(:send, ARG1, :empty?) # ARG1.empty?
 
   # FIXME!
-  @rules = []
+  @rules = {}
   r from: s(:send, BUILTINS, :size, ARG1), # Builtins.size(ARG1)
     to:   s(:send, ARG1, :size)            # ARG1.size
 
@@ -105,7 +77,11 @@ class EagerRewriter < Parser::TreeRewriter
 
   def process(node)
     return if node.nil?
-    puts "PN #{node.type}"
+    trules = self.class.rules.fetch(node.type, [])
+    trules.each do |r|
+      replacement = r.match(node)
+      replace_node(node, replacement) if replacement
+    end
     super
   end
 
