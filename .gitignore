@@ -1,3 +1,7 @@
+/.bundle/
+/coverage/
 Gemfile.lock
 spec/zombie_killer_spec.html
 spec/zombie_killer_spec.rb
+/vendor/
+/zombie-killer-*.gem

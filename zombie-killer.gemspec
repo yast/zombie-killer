@@ -12,11 +12,12 @@ Gem::Specification.new do |spec|
   spec.license  = "MIT"
   spec.authors  = ["Martin Vidner", "David Majda"]
   spec.email    = ["martin@vidner.net", "david@majda.cz"]
-  spec.homepage = "http://github.org/yast/zombie-killer"
+  spec.homepage = "https://github.com/yast/zombie-killer"
 
   # gem content
   spec.files    = Dir[
     "LICENSE",
+    "NEWS.md",
     "README.md",
     "bin/count_method_calls",
     "bin/zk",
@@ -31,9 +32,12 @@ Gem::Specification.new do |spec|
 
   # dependencies
   spec.add_dependency "docopt",   "~> 0"
-  spec.add_dependency "parser",   "> 2.2.0.pre.5", "< 3"
+  spec.add_dependency "parser",   ">= 2.2.0", "< 3"
   spec.add_dependency "unparser", "~> 0"
 
+  spec.add_development_dependency "coveralls", "~> 0"
+  spec.add_development_dependency "rake", ">=10", "< 999"
   spec.add_development_dependency "rspec",     "> 2", "< 4"
   spec.add_development_dependency "redcarpet", "~> 3"
+  spec.add_development_dependency "simplecov", "~> 0"
 end
