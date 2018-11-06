@@ -5,8 +5,13 @@ require "zombie_killer/rule"
 
 # Rewrite Zombies with their idiomatic replacements
 class EagerRewriter < Parser::TreeRewriter
-  include AST::Sexp # the `s` method
-  extend AST::Sexp
+  def self.s(name, *children)
+    Parser::AST::Node.new(name, children)
+  end
+
+  def s(name, *children)
+    self.class.s(name, *children)
+  end
 
   OPS = s(:const, nil, :Ops)
   BUILTINS = s(:const, nil, :Builtins)
