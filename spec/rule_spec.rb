@@ -41,14 +41,20 @@ describe Rule do
     let(:rule) do
       Rule.new(
         from: s(:send, BUILTINS, :size, Rule::Arg), # Builtins.size(ARG1)
-        to:   s(:send, Rule::Arg1, :size)           # ARG1.size
+        to:   ->(a) { s(:send, a, :size) }          # ARG1.size
       )
     end
+    let(:node) { s(:send, BUILTINS, :size, s(:send, nil, :foo)) }
 
     describe "#match2" do
       it "returns the captured node" do
-        node = s(:send, BUILTINS, :size, s(:send, nil, :foo))
         expect(rule.match2(rule.from, node)).to eq([s(:send, nil, :foo)])
+      end
+    end
+
+    describe "#match" do
+      it "returns the replacement" do
+        expect(rule.match(node)).to eq(s(:send, s(:send, nil, :foo), :size))
       end
     end
   end

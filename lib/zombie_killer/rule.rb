@@ -13,16 +13,22 @@ class Rule
   Arg = Placeholder.new("Arg")
   Arg1 = Placeholder.new("Arg1")
 
-  attr_reader :from, :to, :cond
+  # @return [AST::Node]
+  attr_reader :from
+  # @return [Proc]
+  attr_reader :to
 
-  def initialize(from:, to:, cond: -> { true })
+  def initialize(from:, to:)
     @from = from
     @to = to
-    @cond = cond
   end
 
   def match(node)
-    if match2(from, node)
+    captures = match2(from, node)
+    return unless captures
+    if to.respond_to? :call
+      to.call(*captures)
+    else
       to
     end
   end

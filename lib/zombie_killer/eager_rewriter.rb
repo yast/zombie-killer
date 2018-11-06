@@ -15,6 +15,7 @@ class EagerRewriter < Parser::TreeRewriter
 
   OPS = s(:const, nil, :Ops)
   BUILTINS = s(:const, nil, :Builtins)
+  Arg = Rule::Arg
 
   @rules = {}
   class << self
@@ -33,11 +34,16 @@ class EagerRewriter < Parser::TreeRewriter
     [:ivasgn, :ivar],           # @a = @b
     [:cvasgn, :cvar],           # @@a = @@b
   ].each do |xvasgn, xvar|
-    r from: s(xvasgn,
-              ARG1,
-              s(:send, s(xvar, ARG2), :+, ARG3)), # @ARG1 = @ARG2 + ARG3
-      cond: ->(a, b, _c) { a == b },
-      to:   s(:op_asgn, s(xvasgn, ARG1), :+, ARG3) # @ARG1 += ARG3
+    [:+, :-, :*].each do |asop|
+      r from: s(xvasgn,
+                Arg,
+                s(:send, s(xvar, Arg), asop, Arg)), # @ARG1 = @ARG2 + ARG3
+        to:   ->(a, b, c) do
+          if a == b
+            s(:op_asgn, s(xvasgn, a), asop, c) # @ARG1 += ARG3
+          end
+        end
+    end
   end
 
   INFIX = {
@@ -57,60 +63,74 @@ class EagerRewriter < Parser::TreeRewriter
   }.freeze
 
   INFIX.each do |prefix, infix|
-    r from: s(:send, OPS, prefix, ARG1, ARG2), # Ops.add(ARG1, ARG2)
-      to:   s(:send, ARG1, infix, ARG2)        # ARG1 + ARG2
+    r from: s(:send, OPS, prefix, Arg, Arg),   # Ops.add(Arg, ARG2)
+      to:   ->(a, b) { s(:send, a, infix, b) } # Arg + ARG2
   end
 
-  r from: s(:send, s(:send, BUILTINS, :size, ARG1), :>, s(:int, 0)), # Builtins.size(ARG1) > 0
-    to:   s(:send, s(:send, ARG1, :empty?), :!) # !ARG1.empty?
+  r from: s(:send, BUILTINS, :size, Arg), # Builtins.size(Arg)
+    to:   ->(a) { s(:send, a, :size) }    # Arg.size
 
-  r from: s(:send, s(:send, BUILTINS, :size, ARG1), :==, s(:int, 0)), # Builtins.size(ARG1) == 0
-    to:   s(:send, ARG1, :empty?) # ARG1.empty?
+  r from: s(:send, s(:send, Arg, :size), :>, s(:int, 0)), # Arg.size > 0
+    to:   ->(a) { s(:send, s(:send, a, :empty?), :!) } # !Arg.empty?
 
-  r from: s(:send, s(:send, BUILTINS, :size, ARG1), :<, s(:int, 1)), # Builtins.size(ARG1) < 1
-    to:   s(:send, ARG1, :empty?) # ARG1.empty?
+  r from: s(:send, s(:send, Arg, :size), :!=, s(:int, 0)), # Arg.size != 0
+    to:   ->(a) { s(:send, s(:send, a, :empty?), :!) } # !Arg.empty?
 
-  # FIXME!
-  @rules = {}
-  r from: s(:send, BUILTINS, :size, ARG1), # Builtins.size(ARG1)
-    to:   s(:send, ARG1, :size)            # ARG1.size
+  r from: s(:send, s(:send, Arg, :size), :==, s(:int, 0)), # Arg.size == 0
+    to:   ->(a) { s(:send, a, :empty?) } # Arg.empty?
+
+  r from: s(:send, s(:send, Arg, :size), :<=, s(:int, 0)), # Arg.size <= 0
+    to:   ->(a) { s(:send, a, :empty?) } # Arg.empty?
+
+  r from: s(:send, s(:send, Arg, :size), :<, s(:int, 1)), # Arg.size < 1
+    to:   ->(a) { s(:send, a, :empty?) } # Arg.empty?
+
+  def self.sformat_replacement1(format_literal, value)
+    verbatims = format_literal.split("%1", -1)
+    return nil unless verbatims.size == 2
+    s(:dstr, s(:str, verbatims[0]), value, s(:str, verbatims[1]))
+  end
+
+  r from: s(:send, BUILTINS, :sformat, s(:str, Arg), Arg), # Builtins.sformat("...", val)
+    to:   ->(fmt, val) { sformat_replacement1(fmt, val) }
+
+  r from: s(:send, BUILTINS, :foreach, Arg),
+    to:   ->(a) { s(:send, a, :each) }
+
+  def unparser_sanitize(code_s)
+    # unparser converts "foo#{bar}baz"
+    # into "#{"foo"}#{bar}#{"baz"}"
+    # so this undoes the escaping of the litetrals
+    code_s.gsub(/
+                  \#
+                  \{"
+                  (
+                  [^"#]*
+                  )
+                  "\}
+                /x,
+                '\1')
+  end
 
   def replace_node(old_node, new_node)
+    # puts "OLD #{old_node.inspect}"
+    # puts "NEW #{new_node.inspect}"
     source_range = old_node.loc.expression
-    replace(source_range, Unparser.unparse(new_node))
+    unp = Unparser.unparse(new_node)
+    unp = unparser_sanitize(unp)
+    # puts "UNP #{unp.inspect}"
+    replace(source_range, unp)
+    new_node
   end
 
   def process(node)
+    node = super(node)
     return if node.nil?
     trules = self.class.rules.fetch(node.type, [])
-    trules.each do |r|
+    trules.find do |r|
       replacement = r.match(node)
-      replace_node(node, replacement) if replacement
+      node = replace_node(node, replacement) if replacement
     end
-    super
-  end
-
-  def on_send(node)
-    super
-    receiver, name, *args = *node
-    replacement = INFIX[name]
-    if receiver == OPS && replacement && args.size == 2
-      replace_node(node, s(:send, args[0], replacement, args[1]))
-    end
-  end
-
-  AS_OPS = Set.new [:+, :-]
-  def on_lvasgn(node)
-    super
-    vname1, value = *node
-    return unless value && value.type == :send
-    receiver, oname, *args = *value
-    if vname1 == lvar_vname2(receiver) && AS_OPS.include?(oname)
-      replace_node(node, s(:op_asgn, s(:lvasgn, vname1), oname, args[0]))
-    end
-  end
-
-  def lvar_vname2(receiver)
-    receiver.children.first if receiver && receiver.type == :lvar
+    node
   end
 end
