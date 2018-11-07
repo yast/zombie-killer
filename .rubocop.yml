@@ -4,6 +4,21 @@ Style/StringLiterals:
 Style/StringLiteralsInInterpolation:
   EnforcedStyle: double_quotes
 
+Style/SymbolArray:
+  EnforcedStyle: brackets
+
+Style/WordArray:
+  EnforcedStyle: brackets
+
+Style/DoubleNegation:
+  Enabled: false
+
+Performance/RedundantBlockCall:
+  Enabled: false
+
+Style/Alias:
+  EnforcedStyle: prefer_alias_method
+
 Metrics/ClassLength:
   Max: 250
 
