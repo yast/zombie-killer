@@ -94,8 +94,9 @@ class EagerRewriter < Parser::TreeRewriter
   r from: s(:send, BUILTINS, :sformat, s(:str, Arg), Arg), # Builtins.sformat("...", val)
     to:   ->(fmt, val) { sformat_replacement1(fmt, val) }
 
-  r from: s(:send, BUILTINS, :foreach, Arg),
-    to:   ->(a) { s(:send, a, :each) }
+  # Does not improve readability much, fails on nil. Use foo&.each ?
+  # r from: s(:send, BUILTINS, :foreach, Arg),
+  #   to:   ->(a) { s(:send, a, :each) }
 
   def unparser_sanitize(code_s)
     # unparser converts "foo#{bar}baz"
