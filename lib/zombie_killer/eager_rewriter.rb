@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "unparser"
 require "set"
 
@@ -38,7 +40,7 @@ class EagerRewriter < Parser::TreeRewriter
       r from: s(xvasgn,
                 Arg,
                 s(:send, s(xvar, Arg), asop, Arg)), # @ARG1 = @ARG2 + ARG3
-        to:   ->(a, b, c) do
+        to:   ->(a, b, c) do # rubocop:disable Style/Lambda
           if a == b
             s(:op_asgn, s(xvasgn, a), asop, c) # @ARG1 += ARG3
           end

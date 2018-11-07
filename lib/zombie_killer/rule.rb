@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class ARG; end
 class ARG1 < ARG; end
 class ARG2 < ARG; end
@@ -35,9 +37,9 @@ class Rule
 
   # @return an array of captured values or nil
   def match2(expected, actual)
-    #puts "M2 #{expected.inspect} #{actual.inspect}"
-    #p expected.class
-    #p actual.class
+    # puts "M2 #{expected.inspect} #{actual.inspect}"
+    # p expected.class
+    # p actual.class
     return [] if expected.nil? && actual.nil?
     return nil if expected.nil? || actual.nil?
 
@@ -50,14 +52,10 @@ class Rule
       results = expected.children.zip(actual.children).map do |ec, ac|
         match2(ec, ac)
       end
-      #puts "#{results.inspect} for #{expected.inspect}"
-      if results.all?
-        results.flatten(1)
-      else
-        nil
-      end
+      # puts "#{results.inspect} for #{expected.inspect}"
+      results.flatten(1) if results.all?
     when Rule::Arg
-      #puts "ARG #{actual.inspect}"
+      # puts "ARG #{actual.inspect}"
       [actual]
     else
       expected == actual ? [] : nil

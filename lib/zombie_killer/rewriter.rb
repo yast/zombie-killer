@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "parser"
 require "parser/current"
 require "set"
@@ -175,10 +177,10 @@ class ZombieKillerRewriter < Parser::Rewriter
   end
 
   # def on_unless
-    # Does not exist.
-    # `unless` is parsed as an `if` with then_body and else_body swapped.
-    # Compare with `while` and `until` which cannot do that and thus need
-    # distinct node types.
+  # Does not exist.
+  # `unless` is parsed as an `if` with then_body and else_body swapped.
+  # Compare with `while` and `until` which cannot do that and thus need
+  # distinct node types.
   # end
 
   def on_case(node)
@@ -232,13 +234,13 @@ class ZombieKillerRewriter < Parser::Rewriter
     end
   end
 
-  def on_block(node)
+  def on_block(_node)
     # ignore body, clean slate
     scope.clear
   end
   alias_method :on_for, :on_block
 
-  def on_while(node)
+  def on_while(_node)
     # ignore both condition and body,
     # with a simplistic scope we cannot handle them
 
@@ -279,14 +281,14 @@ class ZombieKillerRewriter < Parser::Rewriter
     super
   end
 
-  def on_ensure(node)
+  def on_ensure(_node)
     # (:ensure, guarded-code, ensuring-code)
     # guarded-code may be a :rescue or not
 
     scope.clear
   end
 
-  def on_retry(node)
+  def on_retry(_node)
     # that makes the :rescue a loop, top-down data-flow fails
     raise TooComplexToTranslateError
   end
@@ -296,14 +298,14 @@ class ZombieKillerRewriter < Parser::Rewriter
   def is_call(node, namespace, message)
     n_receiver, n_message = *node
     n_receiver && n_receiver.type == :const &&
-      n_receiver.children[0] == nil &&
+      n_receiver.children[0].nil? &&
       n_receiver.children[1] == namespace &&
       n_message == message
   end
 
   def replace_node(old_node, new_node)
     source_range = old_node.loc.expression
-    if !contains_comment?(source_range.source)
+    unless contains_comment?(source_range.source)
       replace(source_range, Unparser.unparse(new_node))
     end
   end

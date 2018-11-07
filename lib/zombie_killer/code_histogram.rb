@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class CodeHistogram
   attr_reader :counts
 
@@ -32,7 +34,7 @@ class CodeHistogram
   end
 
   def merge!(other)
-    counts.merge!(other.counts) do |key, count, other_count|
+    counts.merge!(other.counts) do |_key, count, other_count|
       count + other_count
     end
   end
@@ -42,7 +44,7 @@ class CodeHistogram
   def invert_hash_preserving_duplicates(h)
     ih = {}
     h.each do |k, v|
-      ih[v] = [] unless ih.has_key?(v)
+      ih[v] = [] unless ih.key?(v)
       ih[v] << k
     end
     ih

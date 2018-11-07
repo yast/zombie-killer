@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "set"
 
 # Niceness of a node means that it cannot be nil.
@@ -33,12 +35,12 @@ module Niceness
   # These are global, called with a nil receiver
   NICE_GLOBAL_METHODS = {
     # message, number of arguments
-    :_ => 1,
+    _: 1
   }.freeze
 
   NICE_OPERATORS = {
     # message, number of arguments (other than receiver)
-    :+ => 1,
+    :+ => 1
   }.freeze
 
   def nice_send(node)
@@ -51,7 +53,7 @@ module Niceness
       return false unless nice(receiver)
       arity = NICE_OPERATORS.fetch(message, -1)
     end
-    return args.size == arity && args.all?{ |a| nice(a) }
+    args.size == arity && args.all? { |a| nice(a) }
   end
 
   def nice_begin(node)

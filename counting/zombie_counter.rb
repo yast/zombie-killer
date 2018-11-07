@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A Zombie is a call to Ops.* or Builtins.*,
 # the wrappers defined in yast2-ruby-bindings
 #
@@ -9,7 +11,7 @@
 #   1 Builtins.tolower
 #   2 Builtins.regexpsub
 #   3 Builtins.regexppos
-#...
+# ...
 # 119 Ops.add
 # 148 Ops.get_symbol
 # 229 Ops.set
@@ -35,7 +37,7 @@ class ZombieCounter < Parser::Rewriter
 
   def count_zombies(node)
     receiver, message = * node
-    if receiver && receiver.type == :const && receiver.children[0] == nil
+    if receiver && receiver.type == :const && receiver.children[0].nil?
       modul = receiver.children[1]
       if [:Ops, :Builtins].include? modul
         method = "#{modul}.#{message}"

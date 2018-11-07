@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "parser"
 require "parser/current"
 
@@ -46,7 +48,7 @@ class ZombieKiller
   private
 
   def fixed_point(x, &lambda_x)
-    while true
+    loop do
       y = lambda_x.call(x)
       return y if y == x
       x = y

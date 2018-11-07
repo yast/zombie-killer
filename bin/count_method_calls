@@ -1,4 +1,6 @@
 #! /usr/bin/env ruby
+# frozen_string_literal: true
+
 usage = <<'EOT'
 Usage:
   count_method_calls PATTERN RUBY_FILE
@@ -29,11 +31,11 @@ class MethodCounter < Parser::AST::Processor
   def on_send(node)
     super
     receiver, message = *node
-    if receiver.nil?
-      method = message.to_s
-    else
-      method = "#{const_to_s(receiver)}.#{message}"
-    end
+    method = if receiver.nil?
+               message.to_s
+             else
+               "#{const_to_s(receiver)}.#{message}"
+             end
     # extglob: {brace,alternatives}
     @count += 1 if File.fnmatch(@pattern, method, File::FNM_EXTGLOB)
   end
@@ -49,7 +51,7 @@ class MethodCounter < Parser::AST::Processor
         "#{const_to_s(parent)}.#{name}"
       end
     else
-      "%"                      # a non-identifier placeholder for "expression"
+      "%" # a non-identifier placeholder for "expression"
     end
   end
 end

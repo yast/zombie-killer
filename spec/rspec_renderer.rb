@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "redcarpet"
 
 require_relative "../lib/zombie_killer"
@@ -46,9 +48,7 @@ class Describe
   def render
     parts = []
     parts << "describe #{@description.inspect} do"
-    if !blocks.empty?
-      parts << Code.indent(@blocks.map(&:render).join("\n\n"))
-    end
+    parts << Code.indent(@blocks.map(&:render).join("\n\n")) unless blocks.empty?
     parts << "end"
     parts.join("\n")
   end
@@ -79,7 +79,7 @@ class RSpecRenderer < Redcarpet::Render::Base
 
   def paragraph(text)
     if text =~ /^\*\*(.*)\*\*$/
-      @next_block_type = $1.downcase.to_sym
+      @next_block_type = Regexp.last_match(1).downcase.to_sym
     else
       first_sentence = text.split(/\.(\s+|$)/).first
       @description = first_sentence.sub(/^Zombie Killer /, "").sub(/\n/, " ")
@@ -88,16 +88,16 @@ class RSpecRenderer < Redcarpet::Render::Base
     nil
   end
 
-  def block_code(code, language)
+  def block_code(code, _language)
     case @next_block_type
-      when :original
-        @original_code = code[0..-2]
-      when :translated
-        @translated_code = code[0..-2]
-      when :unchanged
-        @original_code = @translated_code = code[0..-2]
-      else
-        raise "Invalid next code block type: #@next_block_type.\n#{code}"
+    when :original
+      @original_code = code[0..-2]
+    when :translated
+      @translated_code = code[0..-2]
+    when :unchanged
+      @original_code = @translated_code = code[0..-2]
+    else
+      raise "Invalid next code block type: #{@next_block_type}.\n#{code}"
     end
     @next_block_type = :unknown
 
@@ -117,11 +117,11 @@ class RSpecRenderer < Redcarpet::Render::Base
 
   def doc_header
     Code.join([
-      "# Generated from spec/zombie_killer_spec.md -- do not change!",
-      "",
-      "require \"spec_helper\"",
-      "",
-    ])
+                "# Generated from spec/zombie_killer_spec.md -- do not change!",
+                "",
+                "require \"spec_helper\"",
+                ""
+              ])
   end
 
   def doc_footer
@@ -142,9 +142,7 @@ class RSpecRenderer < Redcarpet::Render::Base
 
   def current_describe
     describe = @describe
-    while describe.blocks.last.is_a?(Describe)
-      describe = describe.blocks.last
-    end
+    describe = describe.blocks.last while describe.blocks.last.is_a?(Describe)
     describe
   end
 

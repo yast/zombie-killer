@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Tracks state for a variable
 class VariableState
   attr_accessor :nice

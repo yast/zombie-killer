@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "rspec/core/rake_task"
 
 require "redcarpet"
@@ -18,11 +20,11 @@ file "spec/zombie_killer_spec.html" => "spec/zombie_killer_spec.md" do |t|
   render_markdown(Redcarpet::Render::HTML, t)
 end
 desc "Render the specification locally"
-task :html => ["spec/zombie_killer_spec.html"]
+task html: ["spec/zombie_killer_spec.html"]
 
 RSpec::Core::RakeTask.new do |t|
   t.verbose = false
 end
-task :spec => ["spec/zombie_killer_spec.rb"]
+task spec: ["spec/zombie_killer_spec.rb"]
 
-task :default => :spec
+task default: :spec

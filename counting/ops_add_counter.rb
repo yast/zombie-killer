@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # A Zombie is a call to Ops.* or Builtins.*,
 # the wrappers defined in yast2-ruby-bindings
 #
@@ -18,7 +20,7 @@ class OpsAddCounter < Parser::Rewriter
   def count_zombies(node)
     receiver, message, a, b = * node
     return unless receiver && receiver.type == :const &&
-      receiver.children[0] == nil && receiver.children[1] == :Ops
+                  receiver.children[0].nil? && receiver.children[1] == :Ops
     return unless message == :add
     types = [a.type, b.type].sort.to_s
     @@counts.increment(types)

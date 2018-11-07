@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "parser"
 
 require_relative "code_histogram"
@@ -20,7 +22,7 @@ class NodeTypeCounter < Parser::Rewriter
     parser = Parser::CurrentRuby.new
     buffer = Parser::Source::Buffer.new(@filename)
     buffer.read
-    ast    = parser.parse(buffer)
+    ast = parser.parse(buffer)
 
     process(ast)
 

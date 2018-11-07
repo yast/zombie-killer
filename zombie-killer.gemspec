@@ -1,8 +1,9 @@
+# frozen_string_literal: true
+
 # -*- ruby -*-
 require File.expand_path("../lib/zombie_killer/version", __FILE__)
 
 Gem::Specification.new do |spec|
-
   # gem name and description
   spec.name     = "zombie-killer"
   spec.version  = ZombieKiller::VERSION
@@ -39,5 +40,6 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake", ">=10", "< 999"
   spec.add_development_dependency "rspec",     "> 2", "< 4"
   spec.add_development_dependency "redcarpet", "~> 3"
+  spec.add_development_dependency "rubocop", "= 0.41.2"
   spec.add_development_dependency "simplecov", "~> 0"
 end
