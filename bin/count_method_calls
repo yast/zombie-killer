@@ -15,6 +15,7 @@ EOT
 require "parser"
 require "parser/current"
 
+# Count occurrences of particular methods
 class MethodCounter < Parser::AST::Processor
   def initialize(pattern)
     @pattern = pattern

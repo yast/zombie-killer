@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require_relative "../lib/zombie_killer/code_histogram"
+
+# Count zombies
+#
 # A Zombie is a call to Ops.* or Builtins.*,
 # the wrappers defined in yast2-ruby-bindings
 #
@@ -20,13 +24,13 @@
 # 753 Ops.GET
 #
 # (Ops.GET is a sum over all flavors of Ops.get)
-
-require "pp"
-require_relative "../lib/zombie_killer/code_histogram"
-
 class ZombieCounter < Parser::Rewriter
+  class << self
+    attr_accessor :counts
+  end
+
   def initialize(*args)
-    @@counts = CodeHistogram.new
+    self.class.counts = CodeHistogram.new
     super(*args)
   end
 
@@ -41,27 +45,25 @@ class ZombieCounter < Parser::Rewriter
       modul = receiver.children[1]
       if [:Ops, :Builtins].include? modul
         method = "#{modul}.#{message}"
-        @@counts.increment(method)
+        self.class.counts.increment(method)
       end
     end
   end
 
   def self.aggregate_ops_get
     total = 0
-    @@counts.counts.each do |method, count|
+    counts.counts.each do |method, count|
       total += count if method.start_with? "Ops.get"
     end
-    @@counts.increment("Ops.GET", total)
+    counts.increment("Ops.GET", total)
   end
 
   def self.report
     aggregate_ops_get
-    @@counts.print_by_frequency($stderr)
+    counts.print_by_frequency($stderr)
   end
 end
 
 # Dirty! This runs at the end of the program.
 # It is easier than discovering how to reuse Rewriter properly.
-END {
-  ZombieCounter.report
-}
+at_exit { ZombieCounter.report }

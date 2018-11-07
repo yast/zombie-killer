@@ -27,6 +27,22 @@ Metrics/ClassLength:
 
 Metrics/LineLength:
   Max: 99
+  Exclude:
+    - spec/zombie_killer_spec.rb
 
-#inherit_from: .rubocop_todo.yml
+# Offense count: 2
+Metrics/AbcSize:
+  Max: 23
+
+# Offense count: 1
+Metrics/CyclomaticComplexity:
+  Max: 11
+
+# Offense count: 4
+Metrics/MethodLength:
+  Max: 21
+
+# Offense count: 1
+Metrics/PerceivedComplexity:
+  Max: 10
 

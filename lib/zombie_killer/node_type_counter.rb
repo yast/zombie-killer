@@ -4,6 +4,7 @@ require "parser"
 
 require_relative "code_histogram"
 
+# Count node types (:send, :lvar etc)
 class NodeTypeCounter < Parser::Rewriter
   attr_reader :node_types
 

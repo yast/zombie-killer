@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+# Keep track of the count of occurences of things (in code)
 class CodeHistogram
   attr_reader :counts
 

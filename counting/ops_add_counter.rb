@@ -6,9 +6,14 @@
 require "pp"
 require_relative "../lib/zombie_killer/code_histogram"
 
+# Count Ops.add
 class OpsAddCounter < Parser::Rewriter
+  class << self
+    attr_accessor :counts
+  end
+
   def initialize(*args)
-    @@counts = CodeHistogram.new
+    self.class.counts = CodeHistogram.new
     super(*args)
   end
 
@@ -23,16 +28,14 @@ class OpsAddCounter < Parser::Rewriter
                   receiver.children[0].nil? && receiver.children[1] == :Ops
     return unless message == :add
     types = [a.type, b.type].sort.to_s
-    @@counts.increment(types)
+    self.class.counts.increment(types)
   end
 
   def self.report
-    @@counts.print_by_frequency($stderr)
+    counts.print_by_frequency($stderr)
   end
 end
 
 # Dirty! This runs at the end of the program.
 # It is easier than discovering how to reuse Rewriter properly.
-END {
-  OpsAddCounter.report
-}
+at_exit { OpsAddCounter.report }

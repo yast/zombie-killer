@@ -224,7 +224,7 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   def on_send(node)
     super
-    if is_call(node, :Ops, :add)
+    if call?(node, :Ops, :add)
       new_op = :+
 
       _ops, _add, a, b = *node
@@ -295,7 +295,7 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   private
 
-  def is_call(node, namespace, message)
+  def call?(node, namespace, message)
     n_receiver, n_message = *node
     n_receiver && n_receiver.type == :const &&
       n_receiver.children[0].nil? &&
@@ -305,9 +305,8 @@ class ZombieKillerRewriter < Parser::Rewriter
 
   def replace_node(old_node, new_node)
     source_range = old_node.loc.expression
-    unless contains_comment?(source_range.source)
-      replace(source_range, Unparser.unparse(new_node))
-    end
+    return if contains_comment?(source_range.source)
+    replace(source_range, Unparser.unparse(new_node))
   end
 
   def contains_comment?(string)

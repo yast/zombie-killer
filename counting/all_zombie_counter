@@ -23,8 +23,7 @@ histograms = Parallel.map(filenames, in_threads: NPROC) do |fn|
   CodeHistogram.parse_by_frequency(count_zombies_in_file(fn))
 end
 
-total = histograms.reduce(CodeHistogram.new) do |memo, obj|
+total = histograms.each_with_object(CodeHistogram.new) do |obj, memo|
   memo.merge! obj
-  memo
 end
 total.print_by_frequency($stdout)
