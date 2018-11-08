@@ -26,8 +26,10 @@ begin
   killer = ZombieKiller.new(eager: options["--eager"])
 
   files = options["FILES"]
-  files << "**/*.rb" if files.empty?
+  files << "." if files.empty?
   files = files.flat_map do |pattern|
+    pattern += "/**/*.rb" if File.directory?(pattern)
+
     if pattern.include? "*"
       Dir[pattern]
     else
